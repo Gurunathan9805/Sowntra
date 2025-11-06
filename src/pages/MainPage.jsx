@@ -1,5 +1,5 @@
 import React, { useState, useRef, useCallback, useEffect } from 'react';
-import { textEffects, imageEffects, fontFamilies, supportedLanguages, specialEffects, stickerOptions, filterOptions, animations, gradientPresets, shapeEffects, socialMediaTemplates } from '../types/types.js';
+import { supportedLanguages,  socialMediaTemplates } from '../types/types.js';
 import { useTranslation } from 'react-i18next';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
