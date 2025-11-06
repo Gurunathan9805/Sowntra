@@ -1,4 +1,4 @@
-import { useCallback } from 'react';
+import React, { useCallback } from 'react';
 import { 
   textEffects, 
   imageEffects, 
@@ -55,7 +55,8 @@ export const useElementOperations = ({
   currentLanguage,
   textDirection,
   t,
-  setIsPlaying // ADD THIS MISSING PARAMETER
+  setIsPlaying,
+  canvasSize
 }) => {
   // Generate unique ID
   const generateId = () => Math.random().toString(36).substr(2, 9);
@@ -100,85 +101,93 @@ export const useElementOperations = ({
   }, [history, historyIndex, setCurrentPageElements, setHistoryIndex]);
 
   // Add element to canvas
-  const addElement = useCallback((type, properties = {}) => {
-    const currentElements = getCurrentPageElements();
-    const newElement = {
-      id: generateId(),
-      type,
-      x: 100,
-      y: 100,
-      width: type === 'text' ? 300 : type === 'line' ? 150 : 100,
-      height: type === 'text' ? 100 : type === 'line' ? 2 : 100,
-      rotation: 0,
-      animation: null,
-      zIndex: currentElements.length,
-      locked: false,
-      filters: JSON.parse(JSON.stringify(filterOptions)),
-      fill: properties.fill || (type === 'rectangle' ? '#3b82f6' : 
-                              type === 'circle' ? '#ef4444' : 
-                              type === 'triangle' ? '#10b981' : 
-                              type === 'star' ? '#f59e0b' : 
-                              type === 'hexagon' ? '#8b5cf6' : '#3b82f6'),
-      stroke: properties.stroke || (type === 'image' ? 'transparent' : '#000000'),
-      strokeWidth: properties.strokeWidth || (type === 'image' ? 0 : 2),
-      fillType: properties.fillType || 'solid',
-      gradient: properties.gradient || {
-        type: 'linear',
-        colors: ['#3b82f6', '#ef4444'],
-        stops: [0, 100],
-        angle: 90,
-        position: { x: 50, y: 50 }
-      },
-      textEffect: 'none',
-      imageEffect: 'none',
-      shapeEffect: 'none',
-      specialEffect: 'none',
-      effectSettings: {},
-      borderRadius: properties.borderRadius || 0,
-      shadow: properties.shadow || null,
-      ...properties
-    };
+// Add element to canvas
+const addElement = useCallback((type, properties = {}) => {
+  const currentElements = getCurrentPageElements();
+  const newElement = {
+    id: generateId(),
+    type,
+    x: 100,
+    y: 100,
+    width: type === 'text' ? 300 : type === 'line' ? 150 : 100,
+    height: type === 'text' ? 100 : type === 'line' ? 2 : 100,
+    rotation: 0,
+    animation: null,
+    zIndex: currentElements.length,
+    locked: false,
+    filters: JSON.parse(JSON.stringify(filterOptions)),
+    // FIXED: Set default fill to transparent for hollow shapes
+    fill: properties.fill || (type === 'image' ? 'transparent' : 
+                            type === 'line' ? '#000000' : 
+                            type === 'arrow' ? '#000000' : 
+                            type === 'text' ? '#000000' : 'transparent'),
+    stroke: properties.stroke || '#000000',
+    strokeWidth: properties.strokeWidth || 2,
+    fillType: properties.fillType || 'solid',
+    gradient: properties.gradient || {
+      type: 'linear',
+      colors: ['#3b82f6', '#ef4444'],
+      stops: [0, 100],
+      angle: 90,
+      position: { x: 50, y: 50 }
+    },
+    textEffect: 'none',
+    imageEffect: 'none',
+    shapeEffect: 'none',
+    specialEffect: 'none',
+    effectSettings: {},
+    borderRadius: properties.borderRadius || 0,
+    shadow: properties.shadow || null,
+    ...properties
+  };
 
-    if (type === 'text') {
-      newElement.content = t('text.doubleClickToEdit');
-      newElement.fontSize = 24;
-      newElement.fontFamily = supportedLanguages[currentLanguage]?.font || 'Arial';
-      newElement.fontWeight = 'normal';
-      newElement.fontStyle = 'normal';
-      newElement.textDecoration = 'none';
-      newElement.color = '#000000';
-      newElement.textAlign = textDirection === 'rtl' ? 'right' : 'left';
-    } else if (type === 'rectangle') {
-      newElement.borderRadius = properties.borderRadius || 0;
-    } else if (type === 'image') {
-      newElement.src = properties.src || '';
-      newElement.borderRadius = properties.borderRadius || 0;
-      newElement.stroke = properties.stroke || 'transparent';
-      newElement.strokeWidth = properties.strokeWidth || 0;
-    } else if (type === 'line') {
-      // Line specific properties
-    } else if (type === 'arrow') {
-      newElement.fill = '#000000';
-    } else if (type === 'star') {
-      newElement.points = 5;
-    } else if (type === 'drawing') {
-      newElement.stroke = '#000000';
-      newElement.strokeWidth = 3;
-      newElement.path = properties.path || [];
-    } else if (type === 'sticker') {
-      newElement.sticker = properties.sticker || 'smile';
-      newElement.fill = properties.fill || '#f59e0b';
-      newElement.width = 80;
-      newElement.height = 80;
-    }
+  if (type === 'text') {
+    newElement.content = t('text.doubleClickToEdit');
+    newElement.fontSize = 24;
+    newElement.fontFamily = supportedLanguages[currentLanguage]?.font || 'Arial';
+    newElement.fontWeight = 'normal';
+    newElement.fontStyle = 'normal';
+    newElement.textDecoration = 'none';
+    newElement.color = '#000000';
+    newElement.textAlign = textDirection === 'rtl' ? 'right' : 'left';
+    // FIXED: Text should have transparent background
+    newElement.fill = 'transparent';
+  } else if (type === 'rectangle') {
+    newElement.borderRadius = properties.borderRadius || 0;
+  } else if (type === 'image') {
+    newElement.src = properties.src || '';
+    newElement.borderRadius = properties.borderRadius || 0;
+    newElement.stroke = properties.stroke || 'transparent';
+    newElement.strokeWidth = properties.strokeWidth || 0;
+    // FIXED: Images should have transparent fill
+    newElement.fill = 'transparent';
+  } else if (type === 'line') {
+    // Line specific properties
+    newElement.fill = '#000000';
+  } else if (type === 'arrow') {
+    newElement.fill = '#000000';
+  } else if (type === 'star') {
+    newElement.points = 5;
+  } else if (type === 'drawing') {
+    newElement.stroke = '#000000';
+    newElement.strokeWidth = 3;
+    newElement.path = properties.path || [];
+    // FIXED: Drawings should have transparent fill
+    newElement.fill = 'transparent';
+  } else if (type === 'sticker') {
+    newElement.sticker = properties.sticker || 'smile';
+    newElement.fill = properties.fill || '#f59e0b';
+    newElement.width = 80;
+    newElement.height = 80;
+  }
 
-    const newElements = [...currentElements, newElement];
-    setCurrentPageElements(newElements);
-    setSelectedElement(newElement.id);
-    setSelectedElements(new Set([newElement.id]));
-    setCurrentTool('select');
-    saveToHistory(newElements);
-  }, [getCurrentPageElements, setCurrentPageElements, saveToHistory, currentLanguage, textDirection, t, setSelectedElement, setSelectedElements, setCurrentTool, generateId]);
+  const newElements = [...currentElements, newElement];
+  setCurrentPageElements(newElements);
+  setSelectedElement(newElement.id);
+  setSelectedElements(new Set([newElement.id]));
+  setCurrentTool('select');
+  saveToHistory(newElements);
+}, [getCurrentPageElements, setCurrentPageElements, saveToHistory, currentLanguage, textDirection, t, setSelectedElement, setSelectedElements, setCurrentTool, generateId]);
 
   // Update element properties
   const updateElement = useCallback((id, updates) => {
@@ -225,6 +234,57 @@ export const useElementOperations = ({
       saveToHistory(newElements);
     }
   }, [lockedElements, getCurrentPageElements, setCurrentPageElements, saveToHistory, setSelectedElement, setSelectedElements, generateId]);
+
+  // Play animations for all elements
+const playAnimations = useCallback(() => {
+  setIsPlaying(true);
+  const currentElements = getCurrentPageElements();
+  
+  currentElements.forEach((element, index) => {
+    if (element.animation && animations[element.animation]) {
+      const elementDOM = document.getElementById(`element-${element.id}`);
+      if (elementDOM) {
+        // Reset animation first
+        elementDOM.style.animation = 'none';
+        
+        // Apply animation after a small delay for sequencing
+        setTimeout(() => {
+          const animationName = animations[element.animation].keyframes;
+          elementDOM.style.animation = `${animationName} 1s ease-out forwards`;
+        }, index * 200); // Stagger animations
+      }
+    }
+  });
+  
+  // Reset playing state after animations complete
+  setTimeout(() => {
+    setIsPlaying(false);
+  }, currentElements.length * 200 + 1000);
+}, [getCurrentPageElements, setIsPlaying]);
+
+// Reset all animations
+const resetAnimations = useCallback(() => {
+  const currentElements = getCurrentPageElements();
+  
+  currentElements.forEach(element => {
+    const elementDOM = document.getElementById(`element-${element.id}`);
+    if (elementDOM) {
+      elementDOM.style.animation = 'none';
+    }
+  });
+  
+  setIsPlaying(false);
+}, [getCurrentPageElements, setIsPlaying]);
+
+// Update element animation
+const updateElementAnimation = useCallback((elementId, animationName) => {
+  updateElement(elementId, { animation: animationName });
+}, [updateElement]);
+
+// Remove animation from element
+const removeElementAnimation = useCallback((elementId) => {
+  updateElement(elementId, { animation: null });
+}, [updateElement]);
 
   // Toggle element lock
   const toggleElementLock = useCallback((id) => {
@@ -881,56 +941,183 @@ export const useElementOperations = ({
   }, [getCurrentPageElements, lockedElements, handleSelectElement, setIsDragging, setShowAlignmentLines, setIsResizing, setIsRotating, setDragStart, canvasRef]);
 
   // Enhanced mouse move handler with directional resizing
-  const handleMouseMove = useCallback((e) => {
-    if (!canvasRef.current) return;
+const handleMouseMove = useCallback((e) => {
+  if (!canvasRef.current) return;
 
-    if (currentTool === 'pen' && isDrawing) {
-      handleDrawing(e);
-      return;
+  if (currentTool === 'pen' && isDrawing) {
+    handleDrawing(e);
+    return;
+  }
+
+  if (!selectedElement || (!isDragging && !isResizing && !isRotating && !isPanning)) return;
+
+  const rect = canvasRef.current.getBoundingClientRect();
+  const mouseX = (e.clientX - rect.left - canvasOffset.x) / zoomLevel;
+  const mouseY = (e.clientY - rect.top - canvasOffset.y) / zoomLevel;
+  
+  if (isPanning) {
+    setCanvasOffset({
+      x: canvasOffset.x + e.movementX,
+      y: canvasOffset.y + e.movementY
+    });
+    return;
+  }
+  
+  const currentElements = getCurrentPageElements();
+  const element = currentElements.find(el => el.id === selectedElement);
+  if (!element) return;
+  
+  // ADDED: Boundary constraints
+  const constrainToCanvas = (x, y, width, height) => {
+    const minX = 0;
+    const minY = 0;
+    const maxX = canvasSize.width - width;
+    const maxY = canvasSize.height - height;
+    
+    return {
+      x: Math.max(minX, Math.min(maxX, x)),
+      y: Math.max(minY, Math.min(maxY, y))
+    };
+  };
+
+  const constrainSize = (x, y, width, height, direction) => {
+    const minX = 0;
+    const minY = 0;
+    const maxX = canvasSize.width;
+    const maxY = canvasSize.height;
+    
+    let constrainedX = x;
+    let constrainedY = y;
+    let constrainedWidth = width;
+    let constrainedHeight = height;
+    
+    // Ensure element stays within canvas bounds during resize
+    switch (direction) {
+      case 'nw':
+        constrainedX = Math.max(minX, x);
+        constrainedY = Math.max(minY, y);
+        constrainedWidth = Math.min(maxX - constrainedX, width);
+        constrainedHeight = Math.min(maxY - constrainedY, height);
+        break;
+      case 'ne':
+        constrainedY = Math.max(minY, y);
+        constrainedWidth = Math.min(maxX - x, width);
+        constrainedHeight = Math.min(maxY - constrainedY, height);
+        break;
+      case 'sw':
+        constrainedX = Math.max(minX, x);
+        constrainedWidth = Math.min(maxX - constrainedX, width);
+        constrainedHeight = Math.min(maxY - y, height);
+        break;
+      case 'se':
+        constrainedWidth = Math.min(maxX - x, width);
+        constrainedHeight = Math.min(maxY - y, height);
+        break;
+      case 'n':
+        constrainedY = Math.max(minY, y);
+        constrainedHeight = Math.min(maxY - constrainedY, height);
+        break;
+      case 's':
+        constrainedHeight = Math.min(maxY - y, height);
+        break;
+      case 'w':
+        constrainedX = Math.max(minX, x);
+        constrainedWidth = Math.min(maxX - constrainedX, width);
+        break;
+      case 'e':
+        constrainedWidth = Math.min(maxX - x, width);
+        break;
+      default:
+        break;
     }
-
-    if (!selectedElement || (!isDragging && !isResizing && !isRotating && !isPanning)) return;
-
-    const rect = canvasRef.current.getBoundingClientRect();
-    const mouseX = (e.clientX - rect.left - canvasOffset.x) / zoomLevel;
-    const mouseY = (e.clientY - rect.top - canvasOffset.y) / zoomLevel;
     
-    if (isPanning) {
-      setCanvasOffset({
-        x: canvasOffset.x + e.movementX,
-        y: canvasOffset.y + e.movementY
-      });
-      return;
+    // Ensure minimum size
+    constrainedWidth = Math.max(20, constrainedWidth);
+    constrainedHeight = Math.max(20, constrainedHeight);
+    
+    return {
+      x: constrainedX,
+      y: constrainedY,
+      width: constrainedWidth,
+      height: constrainedHeight
+    };
+  };
+  
+  if (element.type === 'group' && isDragging) {
+    const deltaX = mouseX - dragStart.x;
+    const deltaY = mouseY - dragStart.y;
+    
+    let newX = dragStart.elementX + deltaX;
+    let newY = dragStart.elementY + deltaY;
+    
+    if (snapToGrid) {
+      newX = Math.round(newX / 10) * 10;
+      newY = Math.round(newY / 10) * 10;
     }
     
-    const currentElements = getCurrentPageElements();
-    const element = currentElements.find(el => el.id === selectedElement);
-    if (!element) return;
+    // ADDED: Constrain group position
+    const constrainedPos = constrainToCanvas(newX, newY, element.width, element.height);
+    newX = constrainedPos.x;
+    newY = constrainedPos.y;
     
-    if (element.type === 'group' && isDragging) {
-      const deltaX = mouseX - dragStart.x;
-      const deltaY = mouseY - dragStart.y;
-      
-      let newX = dragStart.elementX + deltaX;
-      let newY = dragStart.elementY + deltaY;
-      
-      if (snapToGrid) {
-        newX = Math.round(newX / 10) * 10;
-        newY = Math.round(newY / 10) * 10;
+    const newElements = currentElements.map(el => {
+      if (el.groupId === selectedElement) {
+        return {
+          ...el,
+          x: newX + (el.relativeX || 0),
+          y: newY + (el.relativeY || 0)
+        };
+      } else if (el.id === selectedElement) {
+        return {
+          ...el,
+          x: newX,
+          y: newY
+        };
       }
+      return el;
+    });
+    
+    setCurrentPageElements(newElements);
+    saveToHistory(newElements);
+    calculateAlignmentLines({ ...element, x: newX, y: newY });
+  } else if (isDragging) {
+    const deltaX = mouseX - dragStart.x;
+    const deltaY = mouseY - dragStart.y;
+    
+    let newX = dragStart.elementX + deltaX;
+    let newY = dragStart.elementY + deltaY;
+    
+    if (snapToGrid) {
+      newX = Math.round(newX / 10) * 10;
+      newY = Math.round(newY / 10) * 10;
+    }
+    
+    // ADDED: Constrain position to canvas boundaries
+    const constrainedPos = constrainToCanvas(newX, newY, element.width, element.height);
+    newX = constrainedPos.x;
+    newY = constrainedPos.y;
+    
+    if (selectedElements.size === 1) {
+      updateElement(selectedElement, { x: newX, y: newY });
+      calculateAlignmentLines({ ...element, x: newX, y: newY });
+    } else {
+      const deltaMoveX = newX - element.x;
+      const deltaMoveY = newY - element.y;
       
       const newElements = currentElements.map(el => {
-        if (el.groupId === selectedElement) {
+        if (selectedElements.has(el.id) && !lockedElements.has(el.id)) {
+          // ADDED: Constrain each selected element
+          const constrainedElPos = constrainToCanvas(
+            el.x + deltaMoveX, 
+            el.y + deltaMoveY, 
+            el.width, 
+            el.height
+          );
+          
           return {
             ...el,
-            x: newX + (el.relativeX || 0),
-            y: newY + (el.relativeY || 0)
-          };
-        } else if (el.id === selectedElement) {
-          return {
-            ...el,
-            x: newX,
-            y: newY
+            x: constrainedElPos.x,
+            y: constrainedElPos.y
           };
         }
         return el;
@@ -938,101 +1125,71 @@ export const useElementOperations = ({
       
       setCurrentPageElements(newElements);
       saveToHistory(newElements);
-      calculateAlignmentLines({ ...element, x: newX, y: newY });
-    } else if (isDragging) {
-      const deltaX = mouseX - dragStart.x;
-      const deltaY = mouseY - dragStart.y;
-      
-      let newX = dragStart.elementX + deltaX;
-      let newY = dragStart.elementY + deltaY;
-      
-      if (snapToGrid) {
-        newX = Math.round(newX / 10) * 10;
-        newY = Math.round(newY / 10) * 10;
-      }
-      
-      if (selectedElements.size === 1) {
-        updateElement(selectedElement, { x: newX, y: newY });
-        calculateAlignmentLines({ ...element, x: newX, y: newY });
-      } else {
-        const deltaMoveX = newX - element.x;
-        const deltaMoveY = newY - element.y;
-        
-        const newElements = currentElements.map(el => {
-          if (selectedElements.has(el.id) && !lockedElements.has(el.id)) {
-            return {
-              ...el,
-              x: el.x + deltaMoveX,
-              y: el.y + deltaMoveY
-            };
-          }
-          return el;
-        });
-        
-        setCurrentPageElements(newElements);
-        saveToHistory(newElements);
-      }
-    } else if (isResizing) {
-      const deltaX = mouseX - dragStart.x;
-      const deltaY = mouseY - dragStart.y;
-      
-      let newX = dragStart.elementX;
-      let newY = dragStart.elementY;
-      let newWidth = dragStart.elementWidth;
-      let newHeight = dragStart.elementHeight;
-
-      switch (dragStart.resizeDirection) {
-        case 'nw':
-          newX = dragStart.elementX + deltaX;
-          newY = dragStart.elementY + deltaY;
-          newWidth = Math.max(20, dragStart.elementWidth - deltaX);
-          newHeight = Math.max(20, dragStart.elementHeight - deltaY);
-          break;
-        case 'ne':
-          newY = dragStart.elementY + deltaY;
-          newWidth = Math.max(20, dragStart.elementWidth + deltaX);
-          newHeight = Math.max(20, dragStart.elementHeight - deltaY);
-          break;
-        case 'sw':
-          newX = dragStart.elementX + deltaX;
-          newWidth = Math.max(20, dragStart.elementWidth - deltaX);
-          newHeight = Math.max(20, dragStart.elementHeight + deltaY);
-          break;
-        case 'se':
-          newWidth = Math.max(20, dragStart.elementWidth + deltaX);
-          newHeight = Math.max(20, dragStart.elementHeight + deltaY);
-          break;
-        case 'n':
-          newY = dragStart.elementY + deltaY;
-          newHeight = Math.max(20, dragStart.elementHeight - deltaY);
-          break;
-        case 's':
-          newHeight = Math.max(20, dragStart.elementHeight + deltaY);
-          break;
-        case 'w':
-          newX = dragStart.elementX + deltaX;
-          newWidth = Math.max(20, dragStart.elementWidth - deltaX);
-          break;
-        case 'e':
-          newWidth = Math.max(20, dragStart.elementWidth + deltaX);
-          break;
-        default:
-          break;
-      }
-
-      updateElement(selectedElement, { 
-        x: newX, 
-        y: newY, 
-        width: newWidth, 
-        height: newHeight 
-      });
-    } else if (isRotating) {
-      const centerX = element.x + element.width / 2;
-      const centerY = element.y + element.height / 2;
-      const angle = Math.atan2(mouseY - centerY, mouseX - centerX) * 180 / Math.PI;
-      updateElement(selectedElement, { rotation: angle });
     }
-  }, [selectedElement, isDragging, isResizing, isRotating, isPanning, dragStart, getCurrentPageElements, calculateAlignmentLines, zoomLevel, canvasOffset, selectedElements, snapToGrid, updateElement, saveToHistory, currentTool, isDrawing, handleDrawing, lockedElements, setCurrentPageElements, setCanvasOffset]);
+  } else if (isResizing) {
+    const deltaX = mouseX - dragStart.x;
+    const deltaY = mouseY - dragStart.y;
+    
+    let newX = dragStart.elementX;
+    let newY = dragStart.elementY;
+    let newWidth = dragStart.elementWidth;
+    let newHeight = dragStart.elementHeight;
+
+    switch (dragStart.resizeDirection) {
+      case 'nw':
+        newX = dragStart.elementX + deltaX;
+        newY = dragStart.elementY + deltaY;
+        newWidth = Math.max(20, dragStart.elementWidth - deltaX);
+        newHeight = Math.max(20, dragStart.elementHeight - deltaY);
+        break;
+      case 'ne':
+        newY = dragStart.elementY + deltaY;
+        newWidth = Math.max(20, dragStart.elementWidth + deltaX);
+        newHeight = Math.max(20, dragStart.elementHeight - deltaY);
+        break;
+      case 'sw':
+        newX = dragStart.elementX + deltaX;
+        newWidth = Math.max(20, dragStart.elementWidth - deltaX);
+        newHeight = Math.max(20, dragStart.elementHeight + deltaY);
+        break;
+      case 'se':
+        newWidth = Math.max(20, dragStart.elementWidth + deltaX);
+        newHeight = Math.max(20, dragStart.elementHeight + deltaY);
+        break;
+      case 'n':
+        newY = dragStart.elementY + deltaY;
+        newHeight = Math.max(20, dragStart.elementHeight - deltaY);
+        break;
+      case 's':
+        newHeight = Math.max(20, dragStart.elementHeight + deltaY);
+        break;
+      case 'w':
+        newX = dragStart.elementX + deltaX;
+        newWidth = Math.max(20, dragStart.elementWidth - deltaX);
+        break;
+      case 'e':
+        newWidth = Math.max(20, dragStart.elementWidth + deltaX);
+        break;
+      default:
+        break;
+    }
+
+    // ADDED: Constrain resize to canvas boundaries
+    const constrainedSize = constrainSize(newX, newY, newWidth, newHeight, dragStart.resizeDirection);
+    
+    updateElement(selectedElement, { 
+      x: constrainedSize.x, 
+      y: constrainedSize.y, 
+      width: constrainedSize.width, 
+      height: constrainedSize.height 
+    });
+  } else if (isRotating) {
+    const centerX = element.x + element.width / 2;
+    const centerY = element.y + element.height / 2;
+    const angle = Math.atan2(mouseY - centerY, mouseX - centerX) * 180 / Math.PI;
+    updateElement(selectedElement, { rotation: angle });
+  }
+}, [selectedElement, isDragging, isResizing, isRotating, isPanning, dragStart, getCurrentPageElements, calculateAlignmentLines, zoomLevel, canvasOffset, selectedElements, snapToGrid, updateElement, saveToHistory, currentTool, isDrawing, handleDrawing, lockedElements, setCurrentPageElements, setCanvasOffset, canvasSize]); // ADDED: canvasSize to dependencies
 
   const handleMouseUp = useCallback(() => {
     if (currentTool === 'pen' && isDrawing) {
@@ -1123,37 +1280,6 @@ export const useElementOperations = ({
     }
   }, [pages, currentPage, setPages]);
 
-  // Play animations
-  const playAnimations = useCallback(() => {
-    setIsPlaying(true);
-    const currentElements = getCurrentPageElements();
-    currentElements.forEach((element, index) => {
-      if (element.animation) {
-        const elementDOM = document.getElementById(`element-${element.id}`);
-        if (elementDOM) {
-          elementDOM.style.animation = 'none';
-          setTimeout(() => {
-            elementDOM.style.animation = `${element.animation} 1s ease-out forwards`;
-          }, index * 200);
-        }
-      }
-    });
-    
-    setTimeout(() => setIsPlaying(false), currentElements.length * 200 + 1000);
-  }, [setIsPlaying, getCurrentPageElements]);
-
-  // Reset animations
-  const resetAnimations = useCallback(() => {
-    const currentElements = getCurrentPageElements();
-    currentElements.forEach(element => {
-      const elementDOM = document.getElementById(`element-${element.id}`);
-      if (elementDOM) {
-        elementDOM.style.animation = 'none';
-      }
-    });
-    setIsPlaying(false);
-  }, [getCurrentPageElements, setIsPlaying]);
-
   // Preload images for recording
   const preloadImages = useCallback(() => {
     const currentElements = getCurrentPageElements();
@@ -1184,27 +1310,184 @@ export const useElementOperations = ({
     ctx.restore();
   }, [getFilterCSS, getCanvasGradient, getCanvasEffects, imageEffects]);
 
-  // Render element with enhanced selection handles and effects
-  const renderElement = useCallback((element) => {
-    // Implementation of renderElement function
-    // This is a large function that would be moved here
-    // For brevity, showing the structure
-    
-    const isSelected = selectedElements.has(element.id);
-    const isEditing = textEditing === element.id;
-    const isLocked = lockedElements.has(element.id);
-    
-    // ... existing renderElement implementation
-    
-    return (
-      <div key={element.id}>
-        {/* Element content */}
-        {isSelected && currentTool === 'select' && !isLocked && (
-          renderSelectionHandles(element)
-        )}
-      </div>
-    );
-  }, [selectedElements, textEditing, lockedElements, currentTool, getFilterCSS, handleTextEdit, handleMouseDown, currentLanguage, textDirection, getBackgroundStyle, renderSelectionHandles, updateElement, getEffectCSS, getCurrentPageElements, handleSelectElement]);
+// Render element with enhanced selection handles and effects
+const renderElement = useCallback((element) => {
+  const isSelected = selectedElements.has(element.id);
+  const isEditing = textEditing === element.id;
+  const isLocked = lockedElements.has(element.id);
+  
+  const elementStyle = {
+    position: 'absolute',
+    left: element.x,
+    top: element.y,
+    width: element.width,
+    height: element.height,
+    transform: `rotate(${element.rotation || 0}deg)`,
+    zIndex: element.zIndex,
+    pointerEvents: isLocked ? 'none' : 'auto',
+    filter: getFilterCSS(element.filters),
+    animation: element.animation && animations[element.animation] 
+    ? `${animations[element.animation].keyframes} 1s ease-out forwards` 
+    : 'none',
+    ...parseCSS(getEffectCSS(element))
+  };
+
+  let elementContent;
+
+  switch (element.type) {
+    case 'rectangle':
+      elementStyle.backgroundColor = getBackgroundStyle(element);
+      elementStyle.border = `${element.strokeWidth}px solid ${element.stroke}`;
+      elementStyle.borderRadius = element.borderRadius ? `${element.borderRadius}px` : '0';
+      elementStyle.cursor = 'move';
+      
+      elementContent = (
+        <div
+          style={elementStyle}
+          onClick={(e) => handleSelectElement(e, element.id)}
+          onMouseDown={(e) => handleMouseDown(e, element.id, 'drag')}
+        />
+      );
+      break;
+
+    case 'circle':
+      elementStyle.backgroundColor = getBackgroundStyle(element);
+      elementStyle.border = `${element.strokeWidth}px solid ${element.stroke}`;
+      elementStyle.borderRadius = '50%';
+      elementStyle.cursor = 'move';
+      
+      elementContent = (
+        <div
+          style={elementStyle}
+          onClick={(e) => handleSelectElement(e, element.id)}
+          onMouseDown={(e) => handleMouseDown(e, element.id, 'drag')}
+        />
+      );
+      break;
+
+    case 'triangle':
+      // Triangle implementation
+      elementStyle.width = 0;
+      elementStyle.height = 0;
+      elementStyle.backgroundColor = 'transparent';
+      elementStyle.borderLeft = `${element.width/2}px solid transparent`;
+      elementStyle.borderRight = `${element.width/2}px solid transparent`;
+      elementStyle.borderBottom = `${element.height}px solid ${element.fill}`;
+      elementStyle.borderTop = 'none';
+      elementStyle.cursor = 'move';
+      
+      elementContent = (
+        <div
+          style={elementStyle}
+          onClick={(e) => handleSelectElement(e, element.id)}
+          onMouseDown={(e) => handleMouseDown(e, element.id, 'drag')}
+        />
+      );
+      break;
+
+    case 'text':
+      if (isEditing) {
+        elementContent = (
+          <div
+            id={`element-${element.id}`}
+            contentEditable
+            suppressContentEditableWarning
+            style={{
+              ...elementStyle,
+              color: element.color,
+              fontSize: element.fontSize,
+              fontFamily: element.fontFamily,
+              fontWeight: element.fontWeight,
+              fontStyle: element.fontStyle,
+              textDecoration: element.textDecoration,
+              textAlign: element.textAlign,
+              backgroundColor: 'transparent',
+              border: '2px dashed #3b82f6',
+              outline: 'none',
+              padding: '4px',
+              whiteSpace: 'pre-wrap',
+              wordWrap: 'break-word',
+              overflow: 'hidden'
+            }}
+            onBlur={(e) => updateElement(element.id, { content: e.target.textContent })}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                setTextEditing(null);
+              }
+            }}
+          >
+            {element.content}
+          </div>
+        );
+      } else {
+        elementContent = (
+          <div
+            id={`element-${element.id}`}
+            style={{
+              ...elementStyle,
+              color: element.color,
+              fontSize: element.fontSize,
+              fontFamily: element.fontFamily,
+              fontWeight: element.fontWeight,
+              fontStyle: element.fontStyle,
+              textDecoration: element.textDecoration,
+              textAlign: element.textAlign,
+              backgroundColor: 'transparent',
+              border: isSelected ? '2px dashed #3b82f6' : 'none',
+              padding: '4px',
+              whiteSpace: 'pre-wrap',
+              wordWrap: 'break-word',
+              overflow: 'hidden',
+              cursor: 'text'
+            }}
+            onClick={(e) => handleTextEdit(e, element.id)}
+            onDoubleClick={(e) => handleTextEdit(e, element.id)}
+          >
+            {element.content}
+          </div>
+        );
+      }
+      break;
+
+    case 'image':
+      elementStyle.cursor = 'move';
+      elementContent = (
+        <img
+          src={element.src}
+          alt=""
+          style={elementStyle}
+          onClick={(e) => handleSelectElement(e, element.id)}
+          onMouseDown={(e) => handleMouseDown(e, element.id, 'drag')}
+        />
+      );
+      break;
+
+    // Add cases for other shape types: star, hexagon, line, arrow, etc.
+    default:
+      // Default rectangle for any unhandled types
+      elementStyle.backgroundColor = getBackgroundStyle(element);
+      elementStyle.border = `${element.strokeWidth}px solid ${element.stroke}`;
+      elementStyle.cursor = 'move';
+      
+      elementContent = (
+        <div
+          style={elementStyle}
+          onClick={(e) => handleSelectElement(e, element.id)}
+          onMouseDown={(e) => handleMouseDown(e, element.id, 'drag')}
+        />
+      );
+  }
+
+  return (
+    <React.Fragment key={element.id}>
+      {elementContent}
+      {isSelected && currentTool === 'select' && !isLocked && (
+        renderSelectionHandles(element)
+      )}
+    </React.Fragment>
+  );
+}, [selectedElements, textEditing, lockedElements, currentTool, getFilterCSS, handleTextEdit, handleMouseDown, currentLanguage, textDirection, getBackgroundStyle, renderSelectionHandles, updateElement, getEffectCSS, getCurrentPageElements, handleSelectElement, setTextEditing]);
 
   // Render drawing path in progress
   const renderDrawingPath = useCallback(() => {
@@ -1298,6 +1581,10 @@ export const useElementOperations = ({
     updateElement,
     deleteElement,
     duplicateElement,
+    playAnimations,
+  resetAnimations,
+  updateElementAnimation,
+  removeElementAnimation,
     toggleElementLock,
     updateFilter,
     getFilterCSS,

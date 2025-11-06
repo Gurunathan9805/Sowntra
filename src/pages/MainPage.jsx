@@ -218,7 +218,8 @@ const MainPage = () => {
     currentLanguage,
     textDirection,
     setIsPlaying,
-    t
+    t,
+    canvasSize
   });
 
   // Export functions hook
@@ -572,6 +573,8 @@ const MainPage = () => {
           handleCanvasMouseDown={handleCanvasMouseDown}
           handleCanvasMouseEnter={handleCanvasMouseEnter}
           handleCanvasMouseLeave={handleCanvasMouseLeave}
+          handleMouseMove={handleMouseMove}      // ADD this
+          handleMouseUp={handleMouseUp} 
           showGrid={showGrid}
           getCurrentPageElements={getCurrentPageElements}
           renderElement={renderElement}

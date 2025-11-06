@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react'; // ADD useEffect
 import CanvasGrid from './CanvasGrid';
 
 const Canvas = ({
@@ -10,6 +10,8 @@ const Canvas = ({
   handleCanvasMouseDown,
   handleCanvasMouseEnter,
   handleCanvasMouseLeave,
+  handleMouseMove, // ADD this prop
+  handleMouseUp,   // ADD this prop
   showGrid,
   getCurrentPageElements,
   renderElement,
@@ -17,6 +19,25 @@ const Canvas = ({
   showAlignmentLines,
   alignmentLines
 }) => {
+  // ADD global mouse event listeners
+  useEffect(() => {
+    const handleGlobalMouseMove = (e) => {
+      handleMouseMove(e);
+    };
+
+    const handleGlobalMouseUp = (e) => {
+      handleMouseUp(e);
+    };
+
+    document.addEventListener('mousemove', handleGlobalMouseMove);
+    document.addEventListener('mouseup', handleGlobalMouseUp);
+
+    return () => {
+      document.removeEventListener('mousemove', handleGlobalMouseMove);
+      document.removeEventListener('mouseup', handleGlobalMouseUp);
+    };
+  }, [handleMouseMove, handleMouseUp]);
+
   return (
     <div className="flex-1 flex flex-col overflow-hidden">
       <div 
