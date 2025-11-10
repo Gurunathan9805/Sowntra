@@ -267,6 +267,8 @@ const CanvasElement = ({
       ...style,
       objectFit: 'cover',
       borderRadius: element.borderRadius,
+      pointerEvents: 'auto',
+      userSelect: 'none'
     };
     
     content = (
@@ -276,7 +278,19 @@ const CanvasElement = ({
         alt=""
         className={styles.imageElement || ''}
         style={imageStyle}
-        onMouseDown={(e) => !isLocked && handleMouseDown(e, element.id)}
+        onMouseDown={(e) => {
+          if (!isLocked) {
+            e.preventDefault();
+            e.stopPropagation();
+            handleMouseDown(e, element.id);
+          }
+        }}
+        onClick={(e) => {
+          if (!isLocked) {
+            e.stopPropagation();
+            handleSelectElement(e, element.id);
+          }
+        }}
         draggable={false}
       />
     );
