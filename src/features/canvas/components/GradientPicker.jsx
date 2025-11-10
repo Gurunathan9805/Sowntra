@@ -467,18 +467,6 @@ const GradientPicker = ({ gradient, onGradientChange, gradientPickerKey }) => {
           Click any preset to apply • L = Linear, R = Radial
         </div>
       </div>
-      
-      {/* Help Tips */}
-      <div className="mt-3 p-3 bg-blue-50 border border-blue-200 rounded-lg md:p-4 sm:p-2">
-        <div className="text-xs text-blue-800 space-y-1 md:text-sm sm:text-xs">
-          <div className="font-semibold mb-1">💡 Tips:</div>
-          <div>• Drag color stop slider to adjust position (0-100%)</div>
-          <div>• Click color box to pick a new color</div>
-          <div>• Use number input for precise positioning</div>
-          <div>• Minimum 2, maximum 5 color stops</div>
-          <div>• New colors are added in the largest gap</div>
-        </div>
-      </div>
     </div>
   );
 };

@@ -212,13 +212,6 @@ const GradientPicker = ({ gradient, onGradientChange }) => {
             </div>
           ))}
         </div>
-        
-        <div className="text-xs text-gray-500 text-center mt-2 md:text-sm sm:text-xs">
-          {localGradient.colors.length} color stops • {localGradient.type === 'linear' ? `${localGradient.angle}°` : 'Radial'}
-          <div className="text-xs text-blue-600 mt-0.5 font-medium">
-            💡 Click color dots to edit • Click gradient to add
-          </div>
-        </div>
       </div>
 
       {localGradient.type === 'linear' && (
@@ -420,9 +413,6 @@ const GradientPicker = ({ gradient, onGradientChange }) => {
               </div>
             );
           })}
-        </div>
-        <div className="text-xs text-gray-500 mt-1 text-center md:text-sm sm:text-xs">
-          Click any preset to apply • L = Linear, R = Radial
         </div>
       </div>
 
