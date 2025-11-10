@@ -9,6 +9,7 @@ import {  Square,
  Lock, Unlock,
   Film,
  Sparkles, 
+ Group, Ungroup, ZoomIn
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate, useSearchParams } from 'react-router-dom';
@@ -64,19 +65,6 @@ import { useHelpers } from '../features/canvas/hooks/useHelpers';
 // UI Helper Components
 import TransliterationToggle from '../features/canvas/components/TransliterationToggle';
 import VideoSettings from '../features/canvas/components/VideoSettings';
-// Constants imports
-import { 
-  fontFamilies,
-  supportedLanguages,
-  textEffects,
-  imageEffects,
-  shapeEffects,
-  specialEffects,
-  socialMediaTemplates,
-  stickerOptions,
-  animations,
-  filterOptions
-} from '../utils/constants';
 
 
 const Sowntra = () => {
