@@ -153,7 +153,8 @@ const AdminApp = () => {
     visibility: 'public',
     files: null,
     isDragging: false,
-    thumbnail: null
+    thumbnail: null,
+    isPremium: false
   });
 
   // Admin state
