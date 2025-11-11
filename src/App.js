@@ -4,7 +4,8 @@ import { AuthProvider } from "./contexts/AuthContext";
 import ProtectedRoute from "./features/auth/components/ProtectedRoute";
 import LoadingSpinner from "./components/common/LoadingSpinner";
 import ErrorBoundary from "./components/common/ErrorBoundary";
-import BackgroundRemover from "./pages/Background_remover";
+// import BackgroundRemover from "./pages/Background_remover";
+import AdminApp from "./pages/adminApp";
 
 // Lazy load route components for better performance
 const SignupPage = lazy(() => import("./features/auth/components/SignupPage"));
@@ -38,11 +39,19 @@ function App() {
                   </ProtectedRoute>
                 }
               />
-              <Route
+              {/* <Route
                 path="/background-remover"
                 element={
                   <ProtectedRoute>
                     <BackgroundRemover />
+                  </ProtectedRoute>
+                }
+              /> */}
+              <Route
+                path="/admin"
+                element={
+                  <ProtectedRoute>
+                    <AdminApp />
                   </ProtectedRoute>
                 }
               />
