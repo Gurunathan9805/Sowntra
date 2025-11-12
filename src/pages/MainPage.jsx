@@ -1,5 +1,5 @@
 import React, { useState, useRef, useCallback, useEffect } from 'react';
-// import { textEffects,imageEffects,specialEffects,stickerOptions,filterOptions,animations,gradientPresets, shapeEffects,socialMediaTemplates } from '../types/types.js';
+// import { textEffects,imageEffects,fontFamilies,supportedLanguages,specialEffects,stickerOptions,filterOptions,animations,gradientPresets, shapeEffects,socialMediaTemplates } from '../types/types.js';
 import "../styles/MainPageStyles.css";
 
 import {  Square,  
@@ -8,15 +8,11 @@ import {  Square,
  MinusCircle, PlusCircle, 
  Lock, Unlock,
   Film,
- Sparkles,
- Group,
- Ungroup,
- ZoomIn, 
+ Sparkles, Group,ZoomIn,Ungroup,
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
-import ShareButton from '../components/common/ShareButton';
 import jsPDF from 'jspdf';
 import { projectAPI } from '../services/api';
 
