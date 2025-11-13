@@ -33,9 +33,50 @@ const Dashboard = ({
   deleteUser,
   saveProfileEdit
 }) => {
-  const canManageUsers = () => {
-    return currentUser.role === 'admin';
+  // Safe user data to prevent null errors
+  const safeUser = currentUser || {
+    id: '1',
+    name: 'Loading...',
+    email: 'loading@example.com',
+    avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face',
+    role: 'user',
+    joinDate: '2024-01-01',
+    templatesCreated: 0,
+    lastActive: new Date().toISOString(),
+    status: 'active',
+    permissions: []
   };
+
+  // Safe analytics data
+  const safeAnalytics = analytics || {
+    totalUsers: 0,
+    activeUsers: 0,
+    totalTemplates: 0,
+    totalViews: 0,
+    templateUses: 0,
+    userGrowth: 0,
+    viewGrowth: 0,
+    usageGrowth: 0
+  };
+
+  // Safe templates data
+  const safeTemplates = templates || [];
+
+  const canManageUsers = () => {
+    return safeUser.role === 'admin';
+  };
+
+  // If currentUser is still null, show loading state
+  if (!currentUser) {
+    return (
+      <div className="p-8 bg-gradient-to-br from-gray-50 to-gray-100 min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading dashboard...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="p-8 bg-gradient-to-br from-gray-50 to-gray-100 min-h-screen">
@@ -45,21 +86,21 @@ const Dashboard = ({
             <h1 className="text-4xl font-bold text-gray-900 mb-2" style={{ fontFamily: "'Dancing Script', cursive" }}>
               Sowntra Ht
             </h1>
-            <p className="text-gray-600">Welcome back, {currentUser.name}!</p>
+            <p className="text-gray-600">Welcome back, {safeUser.name}!</p>
           </div>
           <div className="flex items-center gap-4">
             <div className="flex items-center gap-3 bg-white rounded-xl p-3 shadow-lg">
               <img 
-                src={currentUser.avatar} 
-                alt={currentUser.name}
+                src={safeUser.avatar} 
+                alt={safeUser.name}
                 className="w-10 h-10 rounded-full object-cover"
               />
               <div>
-                <p className="font-semibold text-gray-900">{currentUser.name}</p>
-                <p className="text-sm text-gray-600 capitalize">{currentUser.role}</p>
+                <p className="font-semibold text-gray-900">{safeUser.name}</p>
+                <p className="text-sm text-gray-600 capitalize">{safeUser.role}</p>
               </div>
               <button
-                onClick={() => startProfileEdit(currentUser)}
+                onClick={() => startProfileEdit(safeUser)}
                 className="p-2 text-gray-400 hover:text-gray-600 transition-colors"
                 title="Edit Profile"
               >
@@ -105,7 +146,7 @@ const Dashboard = ({
       {adminState.showUserManagement && canManageUsers() && (
         <UserManagement
           users={users}
-          currentUser={currentUser}
+          currentUser={safeUser}
           adminState={adminState}
           setAdminState={setAdminState}
           updateUserRole={updateUserRole}
@@ -123,7 +164,7 @@ const Dashboard = ({
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-gray-600 font-medium">Total Users</p>
-                  <h3 className="text-2xl font-bold text-gray-900">{analytics.totalUsers.toLocaleString()}</h3>
+                  <h3 className="text-2xl font-bold text-gray-900">{safeAnalytics.totalUsers.toLocaleString()}</h3>
                   <p className="text-xs text-green-600 font-medium mt-1">Just you</p>
                 </div>
                 <div className="bg-blue-50 p-3 rounded-xl">
@@ -136,7 +177,7 @@ const Dashboard = ({
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-gray-600 font-medium">Active Users</p>
-                  <h3 className="text-2xl font-bold text-gray-900">{analytics.activeUsers.toLocaleString()}</h3>
+                  <h3 className="text-2xl font-bold text-gray-900">{safeAnalytics.activeUsers.toLocaleString()}</h3>
                   <p className="text-xs text-green-600 font-medium mt-1">Currently online</p>
                 </div>
                 <div className="bg-green-50 p-3 rounded-xl">
@@ -149,8 +190,8 @@ const Dashboard = ({
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-gray-600 font-medium">Total Templates</p>
-                  <h3 className="text-2xl font-bold text-gray-900">{analytics.totalTemplates.toLocaleString()}</h3>
-                  <p className="text-xs text-green-600 font-medium mt-1">+{templates.length} user created</p>
+                  <h3 className="text-2xl font-bold text-gray-900">{safeAnalytics.totalTemplates.toLocaleString()}</h3>
+                  <p className="text-xs text-green-600 font-medium mt-1">+{safeTemplates.length} user created</p>
                 </div>
                 <div className="bg-purple-50 p-3 rounded-xl">
                   <Layers className="w-6 h-6 text-purple-600" />
@@ -162,8 +203,8 @@ const Dashboard = ({
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-gray-600 font-medium">Template Views</p>
-                  <h3 className="text-2xl font-bold text-gray-900">{analytics.totalViews.toLocaleString()}</h3>
-                  <p className="text-xs text-green-600 font-medium mt-1">+{analytics.viewGrowth}% from last month</p>
+                  <h3 className="text-2xl font-bold text-gray-900">{safeAnalytics.totalViews.toLocaleString()}</h3>
+                  <p className="text-xs text-green-600 font-medium mt-1">+{safeAnalytics.viewGrowth}% from last month</p>
                 </div>
                 <div className="bg-orange-50 p-3 rounded-xl">
                   <Eye className="w-6 h-6 text-orange-600" />
@@ -180,12 +221,12 @@ const Dashboard = ({
                 <div>
                   <div className="flex justify-between text-sm mb-1">
                     <span className="text-gray-600">Total Template Uses</span>
-                    <span className="font-semibold text-gray-900">{analytics.templateUses.toLocaleString()}</span>
+                    <span className="font-semibold text-gray-900">{safeAnalytics.templateUses.toLocaleString()}</span>
                   </div>
                   <div className="w-full bg-gray-200 rounded-full h-2">
                     <div 
                       className="bg-green-600 h-2 rounded-full" 
-                      style={{ width: `${Math.min(100, (analytics.templateUses / 5000) * 100)}%` }}
+                      style={{ width: `${Math.min(100, (safeAnalytics.templateUses / 5000) * 100)}%` }}
                     ></div>
                   </div>
                 </div>
@@ -193,13 +234,21 @@ const Dashboard = ({
                   <div className="flex justify-between text-sm mb-1">
                     <span className="text-gray-600">Average Uses per Template</span>
                     <span className="font-semibold text-gray-900">
-                      {Math.round(analytics.templateUses / analytics.totalTemplates)}
+                      {safeAnalytics.totalTemplates > 0 
+                        ? Math.round(safeAnalytics.templateUses / safeAnalytics.totalTemplates)
+                        : 0
+                      }
                     </span>
                   </div>
                   <div className="w-full bg-gray-200 rounded-full h-2">
                     <div 
                       className="bg-blue-600 h-2 rounded-full" 
-                      style={{ width: `${Math.min(100, ((analytics.templateUses / analytics.totalTemplates) / 50) * 100)}%` }}
+                      style={{ 
+                        width: `${Math.min(100, safeAnalytics.totalTemplates > 0 
+                          ? ((safeAnalytics.templateUses / safeAnalytics.totalTemplates) / 50) * 100 
+                          : 0
+                        )}%` 
+                      }}
                     ></div>
                   </div>
                 </div>
@@ -209,25 +258,30 @@ const Dashboard = ({
             <div className="bg-white rounded-2xl shadow-lg p-6">
               <h3 className="text-lg font-semibold text-gray-900 mb-4">Popular Templates</h3>
               <div className="space-y-3">
-                {templates.slice(0, 3).map((template, index) => (
-                  <div key={template.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                {safeTemplates.slice(0, 3).map((template, index) => (
+                  <div key={template.id || index} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
                     <div className="flex items-center gap-3">
                       <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center text-blue-600 font-semibold">
                         {index + 1}
                       </div>
                       <div>
-                        <p className="font-medium text-gray-900">{template.name}</p>
+                        <p className="font-medium text-gray-900">{template.name || template.title || 'Unnamed Template'}</p>
                         <p className="text-xs text-gray-600">
-                          By {template.creator} • {template.views} views • {template.uses} uses
+                          By {template.creator || 'Unknown'} • {template.views || 0} views • {template.uses || template.usageCount || 0} uses
                         </p>
                       </div>
                     </div>
                     <div className="text-right">
-                      <p className="text-sm font-semibold text-gray-900">{template.category}</p>
-                      <p className="text-xs text-gray-600">{template.date}</p>
+                      <p className="text-sm font-semibold text-gray-900">{template.category || 'Uncategorized'}</p>
+                      <p className="text-xs text-gray-600">{template.date || 'Unknown date'}</p>
                     </div>
                   </div>
                 ))}
+                {safeTemplates.length === 0 && (
+                  <div className="text-center py-4 text-gray-500">
+                    No templates available
+                  </div>
+                )}
               </div>
             </div>
           </div>
@@ -236,19 +290,19 @@ const Dashboard = ({
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
             <button
               onClick={createNewTemplate}
-              disabled={currentUser.role === 'viewer'}
+              disabled={safeUser.role === 'viewer'}
               className={`p-8 rounded-2xl transition-all shadow-xl transform hover:-translate-y-1 group ${
-                currentUser.role === 'viewer'
+                safeUser.role === 'viewer'
                   ? 'bg-gray-400 cursor-not-allowed'
                   : 'bg-gradient-to-br from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white'
               }`}
             >
               <Plus className="w-10 h-10 mb-4 group-hover:scale-110 transition-transform" />
               <h3 className="text-2xl font-semibold mb-2">
-                {currentUser.role === 'viewer' ? 'View Templates' : 'Create New Template'}
+                {safeUser.role === 'viewer' ? 'View Templates' : 'Create New Template'}
               </h3>
-              <p className={currentUser.role === 'viewer' ? 'text-gray-200' : 'text-blue-100'}>
-                {currentUser.role === 'viewer' 
+              <p className={safeUser.role === 'viewer' ? 'text-gray-200' : 'text-blue-100'}>
+                {safeUser.role === 'viewer' 
                   ? 'View existing templates only' 
                   : 'Design from scratch with powerful tools'
                 }
@@ -257,19 +311,19 @@ const Dashboard = ({
 
             <button
               onClick={() => setUploadModalOpen(true)}
-              disabled={currentUser.role === 'viewer'}
+              disabled={safeUser.role === 'viewer'}
               className={`p-8 rounded-2xl transition-all shadow-xl transform hover:-translate-y-1 group ${
-                currentUser.role === 'viewer'
+                safeUser.role === 'viewer'
                   ? 'bg-gray-400 cursor-not-allowed'
                   : 'bg-gradient-to-br from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 text-white'
               }`}
             >
               <Upload className="w-10 h-10 mb-4 group-hover:scale-110 transition-transform" />
               <h3 className="text-2xl font-semibold mb-2">
-                {currentUser.role === 'viewer' ? 'Browse Templates' : 'Upload Template'}
+                {safeUser.role === 'viewer' ? 'Browse Templates' : 'Upload Template'}
               </h3>
-              <p className={currentUser.role === 'viewer' ? 'text-gray-200' : 'text-purple-100'}>
-                {currentUser.role === 'viewer' 
+              <p className={safeUser.role === 'viewer' ? 'text-gray-200' : 'text-purple-100'}>
+                {safeUser.role === 'viewer' 
                   ? 'Explore template library' 
                   : 'Import pre-made designs'
                 }
@@ -282,42 +336,51 @@ const Dashboard = ({
             >
               <Folder className="w-10 h-10 mb-4 group-hover:scale-110 transition-transform" />
               <h3 className="text-2xl font-semibold mb-2">Template Library</h3>
-              <p className="text-pink-100">Browse {templates.length} templates</p>
+              <p className="text-pink-100">Browse {safeTemplates.length} templates</p>
             </button>
           </div>
 
           <div className="bg-white rounded-2xl shadow-xl p-8">
             <h2 className="text-2xl font-semibold mb-6">Recent Templates</h2>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              {templates.slice(0, 3).map(template => (
+              {safeTemplates.slice(0, 3).map(template => (
                 <div key={template.id} className="border rounded-xl overflow-hidden hover:shadow-xl transition-shadow group">
-                  <img src={template.thumbnail} alt={template.name} className="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-300" />
+                  <img 
+                    src={template.thumbnail} 
+                    alt={template.name || template.title} 
+                    className="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-300" 
+                  />
                   <div className="p-4">
-                    <h3 className="font-semibold text-lg mb-1">{template.name}</h3>
-                    <p className="text-sm text-gray-600">{template.category}</p>
+                    <h3 className="font-semibold text-lg mb-1">{template.name || template.title || 'Unnamed Template'}</h3>
+                    <p className="text-sm text-gray-600">{template.category || 'Uncategorized'}</p>
                     <div className="flex items-center gap-2 mt-2">
                       <img 
                         src={template.creatorAvatar} 
                         alt={template.creator}
                         className="w-6 h-6 rounded-full"
                       />
-                      <span className="text-sm text-gray-600">{template.creator}</span>
+                      <span className="text-sm text-gray-600">{template.creator || 'Unknown'}</span>
                     </div>
                     <div className="flex justify-between items-center mt-2">
                       <div className="flex flex-wrap gap-1">
-                        {template.tags.slice(0, 2).map(tag => (
+                        {(template.tags || []).slice(0, 2).map(tag => (
                           <span key={tag} className="text-xs bg-blue-50 text-blue-700 px-2 py-1 rounded">
                             #{tag}
                           </span>
                         ))}
                       </div>
                       <div className="text-xs text-gray-500">
-                        {template.views} views
+                        {(template.views || 0)} views
                       </div>
                     </div>
                   </div>
                 </div>
               ))}
+              {safeTemplates.length === 0 && (
+                <div className="col-span-3 text-center py-8 text-gray-500">
+                  No templates available. Create your first template to get started!
+                </div>
+              )}
             </div>
           </div>
         </>

@@ -1,44 +1,118 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useRef } from 'react';
 import {
-  Type, Image, Square, Trash2, Copy, Lock, Unlock, Eye, RotateCw, Grid as GridIcon, Ruler,
-  MousePointer, Hand, Group, Ungroup, Layers, AlignLeft, AlignCenter, AlignRight, Save, X
+  Type, 
+  Image, 
+  Square, 
+  Trash2, 
+  Copy, 
+  Lock, 
+  Unlock, 
+  Eye, 
+  RotateCw, 
+  Layout,
+  Ruler,
+  MousePointer, 
+  Hand, 
+  Group, 
+  Ungroup, 
+  Layers, 
+  AlignLeft, 
+  AlignCenter, 
+  AlignRight, 
+  Save, 
+  X
 } from 'lucide-react';
-import EditorToolbar from './EditorToolbar';
-import { animationStyles, SHAPES, CATEGORIES, FONT_FAMILIES, ANIMATIONS, EFFECTS, GRADIENTS } from './constants';
-import { generateId, getEffectStyle, getAnimationClass, getGroupBounds, renderShape } from './helpers';
 
-// const SHAPES = [
-//   { type: 'rectangle', icon: Square, name: 'Rectangle' },
-//   { type: 'circle', icon: Square, name: 'Circle' },
-//   { type: 'triangle', icon: Square, name: 'Triangle' },
-//   { type: 'star', icon: Square, name: 'Star' },
-//   { type: 'hexagon', icon: Square, name: 'Hexagon' },
-//   { type: 'line', icon: Square, name: 'Line' }
-// ];
+// Simple QuickActionsToolbar without complex imports
+const QuickActionsToolbar = ({ 
+  addTextLayer, 
+  fileInputRef, 
+  addShapeLayer, 
+  showShapesMenu, 
+  setShowShapesMenu,
+  editorState, 
+  setEditorState
+}) => {
+  const SHAPES = [
+    { type: 'rectangle', name: 'Rectangle', icon: Square },
+    { type: 'circle', name: 'Circle', icon: Square },
+    { type: 'triangle', name: 'Triangle', icon: Square },
+    { type: 'line', name: 'Line', icon: Square }
+  ];
 
-// Property Input Component
-const PropertyInput = ({ value, onStartEdit, propertyPath, type = 'number', className = '', disabled = false, editingProperty, setEditingProperty, finishPropertyEditing, handlePropertyKeyDown, propertyInputRef }) => {
-  const isEditing = editingProperty?.path === propertyPath;
+  return (
+    <div className="absolute top-4 left-1/2 transform -translate-x-1/2 bg-gray-800 rounded-lg p-2 flex gap-2 shadow-xl z-10 border border-gray-600">
+      <button 
+        onClick={addTextLayer}
+        className="p-2 hover:bg-gray-700 rounded transition-colors text-gray-300 hover:text-white"
+        title="Add Text"
+      >
+        <Type className="w-5 h-5" />
+      </button>
+      
+      <button 
+        onClick={() => fileInputRef.current?.click()}
+        className="p-2 hover:bg-gray-700 rounded transition-colors text-gray-300 hover:text-white"
+        title="Add Image"
+      >
+        <Image className="w-5 h-5" />
+      </button>
+      
+      <div className="relative">
+        <button 
+          onClick={() => setShowShapesMenu(!showShapesMenu)}
+          className="p-2 hover:bg-gray-700 rounded transition-colors text-gray-300 hover:text-white"
+          title="Add Shape"
+        >
+          <Square className="w-5 h-5" />
+        </button>
+        
+        {showShapesMenu && (
+          <div className="absolute left-0 top-full mt-2 bg-gray-800 rounded-lg p-2 shadow-xl z-50 border border-gray-600">
+            <div className="grid grid-cols-2 gap-2">
+              {SHAPES.map(shape => (
+                <button
+                  key={shape.type}
+                  onClick={() => addShapeLayer(shape.type)}
+                  className="p-2 hover:bg-gray-700 rounded transition-colors flex flex-col items-center gap-1 text-gray-300 hover:text-white text-xs"
+                  title={shape.name}
+                >
+                  <shape.icon className="w-4 h-4" />
+                  <span>{shape.name}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+      
+      <div className="w-px bg-gray-600"></div>
+      
+      <button 
+        onClick={() => setEditorState(prev => ({ ...prev, showGrid: !prev.showGrid }))}
+        className={`p-2 rounded transition-colors ${editorState.showGrid ? 'bg-blue-600 text-white' : 'text-gray-300 hover:text-white hover:bg-gray-700'}`}
+        title="Toggle Grid"
+      >
+        <Layout className="w-5 h-5" />
+      </button>
+      
+      <button 
+        onClick={() => setEditorState(prev => ({ ...prev, showRulers: !prev.showRulers }))}
+        className={`p-2 rounded transition-colors ${editorState.showRulers ? 'bg-blue-600 text-white' : 'text-gray-300 hover:text-white hover:bg-gray-700'}`}
+        title="Toggle Rulers"
+      >
+        <Ruler className="w-5 h-5" />
+      </button>
+    </div>
+  );
+};
 
-  if (isEditing) {
-    return (
-      <input
-        ref={propertyInputRef}
-        type={type === 'number' ? 'number' : 'text'}
-        value={editingProperty.value}
-        onChange={(e) => setEditingProperty(prev => ({ ...prev, value: e.target.value }))}
-        onBlur={finishPropertyEditing}
-        onKeyDown={handlePropertyKeyDown}
-        className={`w-full bg-gray-500 text-white px-2 py-1 rounded text-sm border border-blue-400 outline-none ${className}`}
-        autoFocus
-      />
-    );
-  }
-
+// Simple Property Input Component
+const PropertyInput = ({ value, onStartEdit, propertyPath, type = 'number', disabled = false }) => {
   return (
     <div
       onClick={() => !disabled && onStartEdit(propertyPath, value, type)}
-      className={`w-full bg-gray-600 text-white px-2 py-1 rounded text-sm cursor-text hover:bg-gray-500 transition-colors ${className} ${
+      className={`w-full bg-gray-600 text-white px-2 py-1 rounded text-sm cursor-text hover:bg-gray-500 transition-colors ${
         disabled ? 'opacity-50 cursor-not-allowed' : ''
       }`}
     >
@@ -47,184 +121,59 @@ const PropertyInput = ({ value, onStartEdit, propertyPath, type = 'number', clas
   );
 };
 
-// Quick Actions Toolbar Component
-const QuickActionsToolbar = ({ addTextLayer, fileInputRef, addShapeLayer, showShapesMenu, setShowShapesMenu, editorState, setEditorState, shapesMenuRef }) => (
-  <div className="absolute top-4 left-1/2 transform -translate-x-1/2 bg-gray-800 rounded-lg p-2 flex gap-2 shadow-xl z-10 border border-gray-600">
-    <button 
-      onClick={addTextLayer}
-      className="p-2 hover:bg-gray-700 rounded transition-colors text-gray-300 hover:text-white"
-      title="Add Text"
-    >
-      <Type className="w-5 h-5" />
-    </button>
-    <button 
-      onClick={() => fileInputRef.current?.click()}
-      className="p-2 hover:bg-gray-700 rounded transition-colors text-gray-300 hover:text-white"
-      title="Add Image"
-    >
-      <Image className="w-5 h-5" />
-    </button>
-    <div className="relative" ref={shapesMenuRef}>
-      <button 
-        onClick={() => setShowShapesMenu(!showShapesMenu)}
-        className="p-2 hover:bg-gray-700 rounded transition-colors text-gray-300 hover:text-white"
-        title="Add Shape"
-      >
-        <Square className="w-5 h-5" />
-      </button>
-      {showShapesMenu && (
-        <div className="absolute left-0 top-full mt-2 bg-gray-800 rounded-lg p-2 shadow-xl z-50 border border-gray-600">
-          <div className="grid grid-cols-2 gap-2">
-            {SHAPES.map(shape => (
-              <button
-                key={shape.type}
-                onClick={() => addShapeLayer(shape.type)}
-                className="p-2 hover:bg-gray-700 rounded transition-colors flex flex-col items-center gap-1 text-gray-300 hover:text-white text-xs"
-                title={shape.name}
-              >
-                <shape.icon className="w-4 h-4" />
-                <span>{shape.name}</span>
-              </button>
-            ))}
-          </div>
-        </div>
-      )}
-    </div>
-    <div className="w-px bg-gray-600"></div>
-    <button 
-      onClick={() => setEditorState(prev => ({ ...prev, showGrid: !prev.showGrid }))}
-      className={`p-2 rounded transition-colors ${editorState.showGrid ? 'bg-blue-600 text-white' : 'text-gray-300 hover:text-white hover:bg-gray-700'}`}
-      title="Toggle Grid"
-    >
-      <GridIcon className="w-5 h-5" />
-    </button>
-    <button 
-      onClick={() => setEditorState(prev => ({ ...prev, showRulers: !prev.showRulers }))}
-      className={`p-2 rounded transition-colors ${editorState.showRulers ? 'bg-blue-600 text-white' : 'text-gray-300 hover:text-white hover:bg-gray-700'}`}
-      title="Toggle Rulers"
-    >
-      <Ruler className="w-5 h-5" />
-    </button>
-  </div>
-);
-
-// Advanced Organizer Component
-const AdvancedOrganizer = ({ layer, editorState, handleResizeMouseDown, handleRotateMouseDown }) => {
-  if (!editorState.selectedLayerIds.includes(layer.id) || layer.locked) return null;
-
-  const rotation = layer.rotation || 0;
-  const rotationHandleDistance = 40;
-
-  return (
-    <>
-      <div
-        className="absolute inset-0 border-2 border-blue-500 pointer-events-none"
-        style={{
-          borderRadius: '4px',
-          transform: `rotate(${rotation}deg)`
-        }}
-      />
-
-      {['nw', 'ne', 'sw', 'se'].map(handle => (
-        <div
-          key={handle}
-          className={`absolute w-3 h-3 bg-white border-2 border-blue-500 rounded-full cursor-${handle}-resize z-50`}
-          style={{
-            left: handle.includes('w') ? -6 : 'auto',
-            right: handle.includes('e') ? -6 : 'auto',
-            top: handle.includes('n') ? -6 : 'auto',
-            bottom: handle.includes('s') ? -6 : 'auto',
-            transform: `rotate(${rotation}deg)`
-          }}
-          onMouseDown={(e) => handleResizeMouseDown(e, layer, handle)}
-        />
-      ))}
-
-      {['n', 's', 'w', 'e'].map(handle => (
-        <div
-          key={handle}
-          className={`absolute w-3 h-3 bg-white border-2 border-blue-500 rounded-full cursor-${handle}-resize z-50`}
-          style={{
-            left: handle === 'w' ? -6 : handle === 'e' ? 'auto' : '50%',
-            right: handle === 'e' ? -6 : 'auto',
-            top: handle === 'n' ? -6 : handle === 's' ? 'auto' : '50%',
-            bottom: handle === 's' ? -6 : 'auto',
-            marginLeft: handle === 'w' || handle === 'e' ? 0 : -6,
-            marginTop: handle === 'n' || handle === 's' ? 0 : -6,
-            transform: `rotate(${rotation}deg)`
-          }}
-          onMouseDown={(e) => handleResizeMouseDown(e, layer, handle)}
-        />
-      ))}
-
-      <div
-        className="absolute w-6 h-6 bg-white border-2 border-blue-500 rounded-full cursor-grab z-50 flex items-center justify-center"
-        style={{
-          left: '50%',
-          top: -rotationHandleDistance,
-          marginLeft: -12,
-          transform: `rotate(${rotation}deg)`
-        }}
-        onMouseDown={(e) => handleRotateMouseDown(e, layer)}
-      >
-        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-          <path d="M1 4v6h6" />
-          <path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10" />
-        </svg>
-      </div>
-    </>
-  );
-};
-
-// Layer Renderer Component
-const LayerRenderer = ({ layer, editorState, editingTextId, textEditValue, setTextEditValue, handleLayerMouseDown, startTextEditing, finishTextEditing, getAnimationClass, getEffectStyle, renderShape, handleDoubleClick, toggleLock, canvasRef }) => {
+// Simple Layer Renderer
+const LayerRenderer = ({ 
+  layer, 
+  editorState, 
+  editingTextId, 
+  textEditValue, 
+  setTextEditValue, 
+  handleLayerMouseDown, 
+  startTextEditing, 
+  finishTextEditing 
+}) => {
   const isSelected = editorState.selectedLayerIds.includes(layer.id);
   const scale = editorState.zoom / 100;
   const isEditing = editingTextId === layer.id;
-  const animationClass = getAnimationClass(layer);
-  
+
   return (
     <div
       key={layer.id}
-      className={`absolute canvas-layer ${isSelected ? 'ring-0' : ''} ${animationClass}`}
+      className={`absolute canvas-layer ${isSelected ? 'ring-2 ring-blue-500' : ''}`}
       style={{
         left: layer.x * scale,
         top: layer.y * scale,
         width: layer.width * scale,
         height: layer.height * scale,
-        transform: `rotate(${layer.rotation}deg)`,
-        opacity: layer.opacity,
+        transform: `rotate(${layer.rotation || 0}deg)`,
+        opacity: layer.opacity || 1,
         pointerEvents: layer.locked ? 'none' : 'auto',
-        zIndex: layer.zIndex,
-        ...getEffectStyle(layer)
+        zIndex: layer.zIndex || 1,
       }}
       onMouseDown={(e) => handleLayerMouseDown(e, layer)}
-      onDoubleClick={(e) => handleDoubleClick(e, layer, startTextEditing)}
+      onDoubleClick={(e) => {
+        e.stopPropagation();
+        if (layer.type === 'text' && !layer.locked) {
+          startTextEditing(layer);
+        }
+      }}
     >
-      {isSelected && <AdvancedOrganizer layer={layer} editorState={editorState} handleResizeMouseDown={() => {}} handleRotateMouseDown={() => {}} />}
-
       {layer.type === 'text' && (
-        <div className="w-full h-full flex items-center relative text-editing">
+        <div className="w-full h-full flex items-center relative">
           {isEditing ? (
             <textarea
               value={textEditValue}
               onChange={(e) => setTextEditValue(e.target.value)}
               onBlur={finishTextEditing}
-              className="w-full h-full bg-transparent border-none outline-none resize-none p-2 text-editing"
+              className="w-full h-full bg-transparent border-none outline-none resize-none p-2"
               style={{
-                fontSize: layer.fontSize * scale,
-                fontFamily: layer.fontFamily,
-                fontWeight: layer.fontWeight,
-                fontStyle: layer.fontStyle,
-                color: layer.color,
-                textAlign: layer.textAlign,
-                borderRadius: layer.borderRadius,
+                fontSize: (layer.fontSize || 16) * scale,
+                fontFamily: layer.fontFamily || 'Arial',
+                fontWeight: layer.fontWeight || 'normal',
+                color: layer.color || '#000000',
+                textAlign: layer.textAlign || 'left',
                 border: '2px dashed #3b82f6',
                 background: 'rgba(59, 130, 246, 0.1)',
-                cursor: 'text',
-                wordWrap: 'break-word',
-                whiteSpace: 'pre-wrap',
-                overflowWrap: 'break-word'
               }}
               autoFocus
             />
@@ -232,51 +181,38 @@ const LayerRenderer = ({ layer, editorState, editingTextId, textEditValue, setTe
             <div
               className="w-full h-full flex items-center p-2 cursor-move"
               style={{
-                fontSize: layer.fontSize * scale,
-                fontFamily: layer.fontFamily,
-                fontWeight: layer.fontWeight,
-                fontStyle: layer.fontStyle,
-                color: layer.color,
-                textAlign: layer.textAlign,
+                fontSize: (layer.fontSize || 16) * scale,
+                fontFamily: layer.fontFamily || 'Arial',
+                fontWeight: layer.fontWeight || 'normal',
+                color: layer.color || '#000000',
+                textAlign: layer.textAlign || 'left',
                 userSelect: 'none',
-                borderRadius: layer.borderRadius,
                 cursor: 'move',
-                wordWrap: layer.textWrap ? 'break-word' : 'normal',
-                whiteSpace: layer.textWrap ? 'pre-wrap' : 'nowrap',
-                overflowWrap: 'break-word',
-                overflow: 'hidden'
               }}
             >
-              {layer.content}
+              {layer.content || 'Text'}
             </div>
           )}
         </div>
       )}
 
       {layer.type === 'shape' && (
-        <svg 
-          width="100%" 
-          height="100%" 
-          style={{ overflow: 'visible', cursor: 'move' }}
-          className="cursor-move"
-        >
-          {renderShape(layer)}
-        </svg>
+        <div 
+          className="w-full h-full cursor-move"
+          style={{
+            backgroundColor: layer.fill || '#3b82f6',
+            borderRadius: layer.borderRadius || 0,
+          }}
+        />
       )}
 
-      {layer.type === 'image' && (
+      {layer.type === 'image' && layer.src && (
         <img
           src={layer.src}
           alt=""
           className="w-full h-full object-cover cursor-move"
-          style={{ borderRadius: layer.borderRadius }}
           draggable={false}
         />
-      )}
-
-      {layer.type === 'group' && (
-        <div className="w-full h-full border-2 border-dashed border-blue-400 rounded-lg bg-blue-50 bg-opacity-20 cursor-move">
-        </div>
       )}
 
       {layer.locked && (
@@ -288,238 +224,249 @@ const LayerRenderer = ({ layer, editorState, editingTextId, textEditValue, setTe
   );
 };
 
+// Main Editor Component
 const Editor = (props) => {
   const {
-    currentView, setCurrentView, editorState, setEditorState, currentUser,
-    templates, setTemplates, users, setUsers, analytics, setAnalytics,
-    history, setHistory, historyIndex, setHistoryIndex, undo, redo,
-    addTextLayer, addShapeLayer, addImageLayer, updateLayer, deleteSelectedLayers,
-    duplicateSelectedLayers, toggleLock, toggleVisibility, groupLayers, ungroupLayers,
-    bringToFront, sendToBack, bringForward, sendBackward, alignLayers, saveTemplate,
-    startTextEditing, finishTextEditing, startPropertyEditing, finishPropertyEditing,
-    editingProperty, setEditingProperty, handlePropertyKeyDown, editingTextId,
-    setEditingTextId, textEditValue, setTextEditValue, showFloatingToolbar,
-    floatingToolbarPosition, setShowFloatingToolbar, updateFloatingToolbarPosition,
-    canvasRef, fileInputRef, textInputRef, propertyInputRef, shapesMenuRef,
-    showShapesMenu, setShowShapesMenu, handleCanvasMouseDown, handleLayerMouseDown,
-    handleResizeMouseDown, handleRotateMouseDown, handleMouseMove, handleMouseUp,
-    dragState, alignmentLines, autoSave, canEditTemplateSettings, handleImageUpload
+    editorState,
+    setEditorState,
+    addTextLayer,
+    addShapeLayer,
+    deleteSelectedLayers,
+    duplicateSelectedLayers,
+    groupLayers,
+    ungroupLayers,
+    bringToFront,
+    startTextEditing,
+    finishTextEditing,
+    editingTextId,
+    setEditingTextId,
+    textEditValue,
+    setTextEditValue,
+    fileInputRef,
+    handleImageUpload,
+    handleCanvasMouseDown,
+    handleLayerMouseDown
   } = props;
+
+  const [showShapesMenu, setShowShapesMenu] = React.useState(false);
+  const canvasRef = useRef(null); // Added canvasRef
+
+  // Safe handleLayerMouseDown function
+  const safeHandleLayerMouseDown = (e, layer) => {
+    e.stopPropagation();
+    
+    // Check if canvasRef exists before using it
+    if (!canvasRef.current) {
+      console.warn('Canvas reference not available');
+      return;
+    }
+
+    // If handleLayerMouseDown is provided from props, use it
+    if (handleLayerMouseDown) {
+      handleLayerMouseDown(e, layer);
+    } else {
+      // Default behavior - select the layer
+      setEditorState(prev => ({
+        ...prev,
+        selectedLayerIds: [layer.id]
+      }));
+    }
+  };
+
+  // Safe handleCanvasMouseDown function
+  const safeHandleCanvasMouseDown = (e) => {
+    // Check if canvasRef exists
+    if (!canvasRef.current) {
+      console.warn('Canvas reference not available');
+      return;
+    }
+
+    // If handleCanvasMouseDown is provided from props, use it
+    if (handleCanvasMouseDown) {
+      handleCanvasMouseDown(e);
+    } else {
+      // Default behavior - deselect all layers
+      setEditorState(prev => ({
+        ...prev,
+        selectedLayerIds: []
+      }));
+    }
+  };
+
+  // Default functions if not provided
+  const defaultAddTextLayer = () => {
+    const newLayer = {
+      id: Date.now().toString(),
+      type: 'text',
+      content: 'New Text',
+      x: 100,
+      y: 100,
+      width: 200,
+      height: 50,
+      fontSize: 16,
+      color: '#000000',
+      fontFamily: 'Arial',
+      zIndex: editorState.layers.length + 1,
+      visible: true,
+      locked: false
+    };
+    setEditorState(prev => ({
+      ...prev,
+      layers: [...prev.layers, newLayer],
+      selectedLayerIds: [newLayer.id]
+    }));
+  };
+
+  const defaultAddShapeLayer = (shapeType) => {
+    const newLayer = {
+      id: Date.now().toString(),
+      type: 'shape',
+      shapeType: shapeType,
+      x: 150,
+      y: 150,
+      width: 100,
+      height: 100,
+      fill: '#3b82f6',
+      zIndex: editorState.layers.length + 1,
+      visible: true,
+      locked: false
+    };
+    setEditorState(prev => ({
+      ...prev,
+      layers: [...prev.layers, newLayer],
+      selectedLayerIds: [newLayer.id]
+    }));
+    setShowShapesMenu(false);
+  };
+
+  // Default editor state if not provided
+  const defaultEditorState = {
+    canvasWidth: 800,
+    canvasHeight: 600,
+    zoom: 100,
+    showGrid: false,
+    showRulers: false,
+    background: { color: '#ffffff' },
+    layers: [],
+    selectedLayerIds: []
+  };
+
+  const currentEditorState = editorState || defaultEditorState;
 
   return (
     <div className="h-screen flex flex-col bg-gray-900">
-      <style>{animationStyles}</style>
-      
-      <EditorToolbar
-        currentView={currentView}
-        setCurrentView={setCurrentView}
-        editorState={editorState}
-        setEditorState={setEditorState}
-        autoSave={autoSave}
-        historyIndex={historyIndex}
-        history={history}
-        undo={undo}
-        redo={redo}
-        saveTemplate={saveTemplate}
-        canEditTemplateSettings={canEditTemplateSettings}
-        PropertyInput={PropertyInput}
-        startPropertyEditing={startPropertyEditing}
-      />
+      {/* Simple Toolbar */}
+      <div className="bg-gray-800 border-b border-gray-700 p-4 text-white">
+        <div className="flex items-center justify-between">
+          <h2 className="text-xl font-bold">Editor</h2>
+          <div className="flex gap-2">
+            <button className="px-4 py-2 bg-blue-600 rounded hover:bg-blue-700 transition-colors">
+              Save
+            </button>
+            <button className="px-4 py-2 bg-gray-700 rounded hover:bg-gray-600 transition-colors">
+              Export
+            </button>
+          </div>
+        </div>
+      </div>
 
       <div className="flex flex-1 overflow-hidden">
         {/* Left Toolbar */}
-        <div className="w-20 bg-gray-800 border-r border-gray-700 flex flex-col items-center py-4 gap-2">
-          <button 
-            onClick={() => setEditorState(prev => ({ ...prev, activeTool: 'select' }))}
-            className={`w-12 h-12 flex items-center justify-center rounded-lg transition-all ${
-              editorState.activeTool === 'select' ? 'bg-blue-600 text-white shadow-lg' : 'hover:bg-gray-700 text-gray-300'
-            }`}
-            title="Select"
-          >
-            <MousePointer className="w-6 h-6" />
+        <div className="w-16 bg-gray-800 border-r border-gray-700 flex flex-col items-center py-4 gap-2">
+          <button className="w-10 h-10 flex items-center justify-center hover:bg-gray-700 rounded transition-colors text-gray-300 hover:text-white">
+            <MousePointer className="w-5 h-5" />
+          </button>
+          <button className="w-10 h-10 flex items-center justify-center hover:bg-gray-700 rounded transition-colors text-gray-300 hover:text-white">
+            <Hand className="w-5 h-5" />
           </button>
           <button 
-            onClick={() => setEditorState(prev => ({ ...prev, activeTool: 'hand' }))}
-            className={`w-12 h-12 flex items-center justify-center rounded-lg transition-all ${
-              editorState.activeTool === 'hand' ? 'bg-blue-600 text-white shadow-lg' : 'hover:bg-gray-700 text-gray-300'
-            }`}
-            title="Hand Tool"
+            onClick={addTextLayer || defaultAddTextLayer}
+            className="w-10 h-10 flex items-center justify-center hover:bg-gray-700 rounded transition-colors text-gray-300 hover:text-white"
           >
-            <Hand className="w-6 h-6" />
+            <Type className="w-5 h-5" />
           </button>
-          <button onClick={addTextLayer} className="w-12 h-12 flex items-center justify-center hover:bg-gray-700 rounded-lg transition-all text-gray-300 hover:text-white" title="Add Text">
-            <Type className="w-6 h-6" />
+          <button 
+            onClick={() => setShowShapesMenu(!showShapesMenu)}
+            className="w-10 h-10 flex items-center justify-center hover:bg-gray-700 rounded transition-colors text-gray-300 hover:text-white"
+          >
+            <Square className="w-5 h-5" />
           </button>
-          
-          <div className="relative" ref={shapesMenuRef}>
-            <button 
-              onClick={() => setShowShapesMenu(!showShapesMenu)}
-              className="w-12 h-12 flex items-center justify-center hover:bg-gray-700 rounded-lg transition-all text-gray-300 hover:text-white"
-              title="Add Shape"
-            >
-              <Square className="w-6 h-6" />
-            </button>
-          </div>
-
-          <button onClick={() => fileInputRef.current?.click()} className="w-12 h-12 flex items-center justify-center hover:bg-gray-700 rounded-lg transition-all text-gray-300 hover:text-white" title="Add Image">
-            <Image className="w-6 h-6" />
-          </button>
-          <div className="w-10 h-px bg-gray-600 my-2"></div>
-          <button onClick={duplicateSelectedLayers} disabled={!editorState.selectedLayerIds.length} className="w-12 h-12 flex items-center justify-center hover:bg-gray-700 rounded-lg transition-all text-gray-300 hover:text-white disabled:opacity-30" title="Duplicate">
-            <Copy className="w-6 h-6" />
-          </button>
-          <button onClick={deleteSelectedLayers} disabled={!editorState.selectedLayerIds.length} className="w-12 h-12 flex items-center justify-center hover:bg-gray-700 rounded-lg transition-all text-gray-300 hover:text-white disabled:opacity-30" title="Delete">
-            <Trash2 className="w-6 h-6" />
+          <button 
+            onClick={() => fileInputRef?.current?.click()}
+            className="w-10 h-10 flex items-center justify-center hover:bg-gray-700 rounded transition-colors text-gray-300 hover:text-white"
+          >
+            <Image className="w-5 h-5" />
           </button>
         </div>
 
         {/* Main Canvas Area */}
         <div className="flex-1 bg-gray-700 overflow-auto p-8 relative">
           <QuickActionsToolbar 
-            addTextLayer={addTextLayer}
+            addTextLayer={addTextLayer || defaultAddTextLayer}
             fileInputRef={fileInputRef}
-            addShapeLayer={addShapeLayer}
+            addShapeLayer={addShapeLayer || defaultAddShapeLayer}
             showShapesMenu={showShapesMenu}
             setShowShapesMenu={setShowShapesMenu}
-            editorState={editorState}
+            editorState={currentEditorState}
             setEditorState={setEditorState}
-            shapesMenuRef={shapesMenuRef}
           />
           
           <div className="flex items-center justify-center min-h-full">
             <div
-              ref={canvasRef}
-              className="relative shadow-2xl canvas-container bg-white"
+              ref={canvasRef} // Added ref here
+              className="relative shadow-2xl bg-white"
               style={{
-                width: editorState.canvasWidth * (editorState.zoom / 100),
-                height: editorState.canvasHeight * (editorState.zoom / 100),
-                background: editorState.background.type === 'solid' 
-                  ? editorState.background.color 
-                  : editorState.background.gradient,
+                width: currentEditorState.canvasWidth * (currentEditorState.zoom / 100),
+                height: currentEditorState.canvasHeight * (currentEditorState.zoom / 100),
+                background: currentEditorState.background?.color || '#ffffff',
                 transformOrigin: 'center',
                 position: 'relative',
                 overflow: 'hidden',
-                cursor: editorState.activeTool === 'hand' ? 'grab' : 'default'
               }}
-              onMouseDown={handleCanvasMouseDown}
+              onMouseDown={safeHandleCanvasMouseDown} // Use safe function
             >
-              {editorState.showGrid && (
+              {currentEditorState.showGrid && (
                 <div 
                   className="absolute inset-0 pointer-events-none"
                   style={{
-                    backgroundImage: `linear-gradient(rgba(255, 255, 255, 0.1) 1px, transparent 1px),
-                                       linear-gradient(90deg, rgba(255, 255, 255, 0.1) 1px, transparent 1px)`,
+                    backgroundImage: `linear-gradient(rgba(0, 0, 0, 0.1) 1px, transparent 1px),
+                                     linear-gradient(90deg, rgba(0, 0, 0, 0.1) 1px, transparent 1px)`,
                     backgroundSize: '20px 20px'
                   }}
                 />
               )}
 
-              {alignmentLines.vertical.map((x, i) => (
-                <div
-                  key={`v-${i}`}
-                  className="absolute top-0 bottom-0 w-px bg-pink-500 z-40"
-                  style={{ left: x * (editorState.zoom / 100) }}
-                />
-              ))}
-              {alignmentLines.horizontal.map((y, i) => (
-                <div
-                  key={`h-${i}`}
-                  className="absolute left-0 right-0 h-px bg-pink-500 z-40"
-                  style={{ top: y * (editorState.zoom / 100) }}
-                />
-              ))}
-
-              {showFloatingToolbar && editorState.selectedLayerIds.length > 0 && (
-                <div 
-                  className="floating-toolbar absolute bg-gray-800 rounded-lg shadow-2xl border border-gray-600 z-50 p-2 flex items-center gap-1"
-                  style={{
-                    left: floatingToolbarPosition.x * (editorState.zoom / 100),
-                    top: floatingToolbarPosition.y * (editorState.zoom / 100),
-                    transform: 'translateX(-50%)'
-                  }}
-                >
-                  <button
-                    onClick={duplicateSelectedLayers}
-                    className="p-2 hover:bg-gray-700 rounded transition-colors text-gray-300 hover:text-white"
-                    title="Duplicate"
-                  >
-                    <Copy className="w-4 h-4" />
-                  </button>
-                  <button
-                    onClick={deleteSelectedLayers}
-                    className="p-2 hover:bg-gray-700 rounded transition-colors text-gray-300 hover:text-white"
-                    title="Delete"
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </button>
-                  {editorState.selectedLayerIds.length > 1 && (
-                    <>
-                      <div className="w-px h-4 bg-gray-600"></div>
-                      <button
-                        onClick={groupLayers}
-                        className="p-2 hover:bg-gray-700 rounded transition-colors text-gray-300 hover:text-white"
-                        title="Group"
-                      >
-                        <Group className="w-4 h-4" />
-                      </button>
-                      <button
-                        onClick={ungroupLayers}
-                        className="p-2 hover:bg-gray-700 rounded transition-colors text-gray-300 hover:text-white"
-                        title="Ungroup"
-                      >
-                        <Ungroup className="w-4 h-4" />
-                      </button>
-                    </>
-                  )}
-                  <div className="w-px h-4 bg-gray-600"></div>
-                  <button
-                    onClick={() => editorState.selectedLayerIds.length > 0 && bringToFront(editorState.selectedLayerIds[0])}
-                    className="p-2 hover:bg-gray-700 rounded transition-colors text-gray-300 hover:text-white"
-                    title="Bring to Front"
-                  >
-                    <Layers className="w-4 h-4" />
-                  </button>
-                </div>
-              )}
-
-              {editorState.layers
-                .filter(l => l.visible)
-                .sort((a, b) => a.zIndex - b.zIndex)
+              {currentEditorState.layers
+                .filter(l => l.visible !== false)
+                .sort((a, b) => (a.zIndex || 1) - (b.zIndex || 1))
                 .map(layer => (
                   <LayerRenderer
                     key={layer.id}
                     layer={layer}
-                    editorState={editorState}
+                    editorState={currentEditorState}
                     editingTextId={editingTextId}
                     textEditValue={textEditValue}
                     setTextEditValue={setTextEditValue}
-                    handleLayerMouseDown={handleLayerMouseDown}
+                    handleLayerMouseDown={safeHandleLayerMouseDown} // Use safe function
                     startTextEditing={startTextEditing}
                     finishTextEditing={finishTextEditing}
-                    getAnimationClass={getAnimationClass}
-                    getEffectStyle={getEffectStyle}
-                    renderShape={renderShape}
-                    handleDoubleClick={(e, layer) => {
-                      e.stopPropagation();
-                      e.preventDefault();
-                      if (layer.type === 'text' && !layer.locked) {
-                        startTextEditing(layer);
-                      }
-                    }}
-                    toggleLock={toggleLock}
-                    canvasRef={canvasRef}
                   />
                 ))}
             </div>
           </div>
         </div>
 
-        {/* Right Properties Panel - Simplified for this example */}
-        <div className="w-80 bg-gray-800 border-l border-gray-700 overflow-y-auto p-4 text-white">
-          <h3 className="font-semibold mb-4 text-lg">Properties</h3>
-          {editorState.selectedLayerIds.length > 0 ? (
+        {/* Right Properties Panel */}
+        <div className="w-64 bg-gray-800 border-l border-gray-700 overflow-y-auto p-4 text-white">
+          <h3 className="font-semibold mb-4">Properties</h3>
+          {currentEditorState.selectedLayerIds.length > 0 ? (
             <div className="space-y-4 text-sm">
-              <p className="text-gray-400">Layer properties panel ready</p>
+              <div>
+                <label className="block text-gray-400 mb-1">Selected Layers</label>
+                <div className="text-white">
+                  {currentEditorState.selectedLayerIds.length} layer(s) selected
+                </div>
+              </div>
             </div>
           ) : (
             <p className="text-gray-400 text-sm">Select a layer to edit properties</p>
