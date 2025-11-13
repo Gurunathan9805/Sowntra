@@ -248,8 +248,7 @@ const CanvasElement = ({
     const triangleStyle = {
       ...style,
       width: element.width,
-      height: element.height,
-      position: 'relative'
+      height: element.height
     };
     
     const fillStyle = {
@@ -383,35 +382,99 @@ const CanvasElement = ({
       </svg>
     );
   } else if (element.type === 'star') {
+    const clipPathId = `star-clip-${element.id}`;
     const points = element.points || 5;
-    const outerRadius = Math.min(element.width, element.height) / 2;
-    const innerRadius = outerRadius / 2;
-    const centerX = element.width / 2;
-    const centerY = element.height / 2;
     
-    let path = '';
+    // Calculate star points to fill the entire bounding box
+    const padding = 0.02; // Small padding to prevent clipping
+    const outerRadius = 0.5 - padding;
+    const innerRadius = outerRadius * 0.4;
+    const centerX = 0.5;
+    const centerY = 0.5;
+    
+    let clipPathPoints = '';
     for (let i = 0; i < points * 2; i++) {
       const radius = i % 2 === 0 ? outerRadius : innerRadius;
       const angle = (Math.PI * 2 * i) / (points * 2) - Math.PI / 2;
       const x = centerX + radius * Math.cos(angle);
       const y = centerY + radius * Math.sin(angle);
-      path += (i === 0 ? 'M' : 'L') + x + ',' + y;
+      clipPathPoints += x + ',' + y + ' ';
     }
-    path += 'Z';
+    
+    const starStyle = {
+      ...style,
+      width: element.width,
+      height: element.height
+    };
+    
+    const fillStyle = {
+      position: 'absolute',
+      top: 0,
+      left: 0,
+      width: '100%',
+      height: '100%',
+      backgroundColor: element.fillType === 'solid' ? element.fill : 'transparent',
+      background: element.fillType === 'gradient' ? getBackgroundStyle(element) : 'none',
+      clipPath: `url(#${clipPathId})`,
+      WebkitClipPath: `url(#${clipPathId})`
+    };
+    
+    // Create SVG path for stroke (matching clipPath proportions)
+    const paddingPx = Math.min(element.width, element.height) * 0.02;
+    const maxRadius = Math.min(element.width, element.height) / 2;
+    const outerRadiusPx = maxRadius - paddingPx;
+    const innerRadiusPx = outerRadiusPx * 0.4; // Same proportion as clipPath
+    const centerXPx = element.width / 2;
+    const centerYPx = element.height / 2;
+    
+    let strokePath = '';
+    for (let i = 0; i < points * 2; i++) {
+      const radius = i % 2 === 0 ? outerRadiusPx : innerRadiusPx;
+      const angle = (Math.PI * 2 * i) / (points * 2) - Math.PI / 2;
+      const x = centerXPx + radius * Math.cos(angle);
+      const y = centerYPx + radius * Math.sin(angle);
+      strokePath += (i === 0 ? 'M' : 'L') + x + ',' + y;
+    }
+    strokePath += 'Z';
     
     content = (
-      <svg
+      <div
         id={`element-${element.id}`}
-        style={{...style}}
+        className={`${styles.shapeElement || ''}`}
+        style={starStyle}
         onMouseDown={(e) => !isLocked && handleMouseDown(e, element.id)}
       >
-        <path
-          d={path}
-          fill={getBackgroundStyle(element)}
-          stroke={element.stroke}
-          strokeWidth={element.strokeWidth}
+        {/* Fill layer */}
+        <div 
+          className={element.fillType === 'gradient' ? 'gradient-fix' : ''}
+          style={fillStyle}
         />
-      </svg>
+        
+        {/* Stroke layer using SVG */}
+        <svg 
+          width="100%" 
+          height="100%" 
+          style={{ position: 'absolute', top: 0, left: 0, pointerEvents: 'none' }}
+          viewBox={`0 0 ${element.width} ${element.height}`}
+          preserveAspectRatio="none"
+        >
+          <path
+            d={strokePath}
+            fill="none"
+            stroke={element.stroke || '#000000'}
+            strokeWidth={element.strokeWidth || 2}
+          />
+        </svg>
+        
+        {/* Clip path definition */}
+        <svg width="0" height="0" style={{ position: 'absolute' }}>
+          <defs>
+            <clipPath id={clipPathId} clipPathUnits="objectBoundingBox">
+              <polygon points={clipPathPoints} />
+            </clipPath>
+          </defs>
+        </svg>
+      </div>
     );
   } else if (element.type === 'hexagon') {
     const centerX = element.width / 2;
