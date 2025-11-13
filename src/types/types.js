@@ -17,6 +17,11 @@ import {
   CreditCard,
   Heart,
   BookOpen,
+  Circle,
+  Triangle,
+  Star,
+  Hexagon,
+  Minus,
 } from "lucide-react";
 
 export const socialMediaTemplates = {
@@ -224,6 +229,94 @@ export const fontFamilies = [
     'Lohit Malayalam', 'Lohit Oriya', 'Lohit Gurmukhi'
 ];
 
+// Template Presets
+export const templatePresets = [
+    {
+      id: 1,
+      name: "Social Media Post",
+      width: 1080,
+      height: 1080,
+      background: { type: 'gradient', gradient: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)' },
+      description: "Perfect for Instagram, Facebook",
+      thumbnail: "🖼️"
+    },
+    {
+      id: 2,
+      name: "YouTube Thumbnail",
+      width: 1280,
+      height: 720,
+      background: { type: 'solid', color: '#000000' },
+      description: "16:9 aspect ratio for videos",
+      thumbnail: "🎬"
+    },
+    {
+      id: 3,
+      name: "Story Post",
+      width: 1080,
+      height: 1920,
+      background: { type: 'gradient', gradient: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)' },
+      description: "Vertical format for stories",
+      thumbnail: "📱"
+    },
+    {
+      id: 4,
+      name: "Blog Header",
+      width: 1200,
+      height: 630,
+      background: { type: 'solid', color: '#ffffff' },
+      description: "Open Graph image size",
+      thumbnail: "📝"
+    },
+    {
+      id: 5,
+      name: "Presentation Slide",
+      width: 1920,
+      height: 1080,
+      background: { type: 'solid', color: '#f8fafc' },
+      description: "Widescreen presentation",
+      thumbnail: "📊"
+    },
+    {
+      id: 6,
+      name: "Business Card",
+      width: 750,
+      height: 450,
+      background: { type: 'solid', color: '#ffffff' },
+      description: "Standard business card size",
+      thumbnail: "💼"
+    }
+  ];
+
+const categories = ['Social Media', 'Poster', 'Business', 'Marketing', 'Educational', 'Personal'];
+  
+export  const shapes = [
+    { type: 'rectangle', icon: Square, name: 'Rectangle' },
+    { type: 'circle', icon: Circle, name: 'Circle' },
+    { type: 'triangle', icon: Triangle, name: 'Triangle' },
+    { type: 'star', icon: Star, name: 'Star' },
+    { type: 'hexagon', icon: Hexagon, name: 'Hexagon' },
+    { type: 'line', icon: Minus, name: 'Line' }
+  ];
+
+ export const gradients = [
+    'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+    'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
+    'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)',
+    'linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)',
+    'linear-gradient(135deg, #fa709a 0%, #fee140 100%)',
+    'linear-gradient(135deg, #30cfd0 0%, #330867 100%)',
+    'linear-gradient(135deg, #a8edea 0%, #fed6e3 100%)',
+    'linear-gradient(135deg, #5ee7df 0%, #b490ca 100%)',
+    'linear-gradient(135deg, #d299c2 0%, #fef9d7 100%)',
+    'linear-gradient(135deg, #89f7fe 0%, #66a6ff 100%)',
+    'linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%)',
+    'linear-gradient(135deg, #a1c4fd 0%, #c2e9fb 100%)',
+    'linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%)',
+    'linear-gradient(135deg, #ff9a9e 0%, #fad0c4 100%)',
+    'linear-gradient(135deg, #d4fc79 0%, #96e6a1 100%)',
+    'linear-gradient(135deg, #84fab0 0%, #8fd3f4 100%)',
+  ];
+
 // Supported languages with their scripts
 export const supportedLanguages = {
     en: { name: 'English', direction: 'ltr', font: 'Arial' },
@@ -413,3 +506,16 @@ export const gradientPresets = [
         name: 'Radial Ocean'
       }
     ];
+
+export const effects = [
+    'none', 'blur', 'brightness', 'contrast', 'grayscale', 'sepia', 
+    'invert', 'saturate', 'hue-rotate', 'drop-shadow', 'opacity'
+  ];
+
+  // User roles for admin management
+export const userRoles = [
+    { value: 'admin', label: 'Administrator', description: 'Full system access', color: 'bg-purple-100 text-purple-800' },
+    { value: 'designer', label: 'Designer', description: 'Create and edit templates', color: 'bg-blue-100 text-blue-800' },
+    { value: 'marketer', label: 'Marketer', description: 'Use and customize templates', color: 'bg-green-100 text-green-800' },
+    { value: 'viewer', label: 'Viewer', description: 'View templates only', color: 'bg-gray-100 text-gray-800' }
+  ];
