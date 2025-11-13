@@ -563,12 +563,18 @@ const CanvasElement = ({
             width: element.width,
             height: element.height,
             backgroundColor: 'rgba(0,0,0,0.1)',
-            pointerEvents: 'none',
+            pointerEvents: 'auto',
             zIndex: element.zIndex + 500,
             display: 'flex',
             alignItems: 'center',
-            justifyContent: 'center'
+            justifyContent: 'center',
+            cursor: 'pointer'
           }}
+          onMouseDown={(e) => {
+            e.stopPropagation();
+            handleSelectElement(e, element.id);
+          }}
+          title="Click to select and unlock this element"
         >
           <Lock size={20} color="#666" />
         </div>
