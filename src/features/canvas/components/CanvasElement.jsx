@@ -243,30 +243,73 @@ const CanvasElement = ({
       />
     );
   } else if (element.type === 'triangle') {
+    const clipPathId = `triangle-clip-${element.id}`;
+    
     const triangleStyle = {
       ...style,
-      width: 0,
-      height: 0,
-      borderLeft: `${element.width/2}px solid transparent`,
-      borderRight: `${element.width/2}px solid transparent`,
-      borderBottom: `${element.height}px solid ${element.fillType === 'solid' ? element.fill : getBackgroundStyle(element)}`,
-      borderTop: 'none',
-      background: element.fillType === 'gradient' ? getBackgroundStyle(element) : 'none'
+      width: element.width,
+      height: element.height,
+      position: 'relative'
+    };
+    
+    const fillStyle = {
+      position: 'absolute',
+      top: 0,
+      left: 0,
+      width: '100%',
+      height: '100%',
+      backgroundColor: element.fillType === 'solid' ? element.fill : 'transparent',
+      background: element.fillType === 'gradient' ? getBackgroundStyle(element) : 'none',
+      clipPath: `url(#${clipPathId})`,
+      WebkitClipPath: `url(#${clipPathId})`
     };
     
     content = (
       <div
         id={`element-${element.id}`}
-        className={`${styles.shapeElement || ''} ${element.fillType === 'gradient' ? 'gradient-fix' : ''}`}
+        className={`${styles.shapeElement || ''}`}
         style={triangleStyle}
         onMouseDown={(e) => !isLocked && handleMouseDown(e, element.id)}
-      />
+      >
+        {/* Fill layer */}
+        <div 
+          className={element.fillType === 'gradient' ? 'gradient-fix' : ''}
+          style={fillStyle}
+        />
+        
+        {/* Stroke layer using SVG */}
+        <svg 
+          width="100%" 
+          height="100%" 
+          style={{ position: 'absolute', top: 0, left: 0, pointerEvents: 'none' }}
+          viewBox={`0 0 ${element.width} ${element.height}`}
+          preserveAspectRatio="none"
+        >
+          <polygon
+            points={`${element.width/2},0 ${element.width},${element.height} 0,${element.height}`}
+            fill="none"
+            stroke={element.stroke || '#000000'}
+            strokeWidth={element.strokeWidth || 2}
+          />
+        </svg>
+        
+        {/* Clip path definition */}
+        <svg width="0" height="0" style={{ position: 'absolute' }}>
+          <defs>
+            <clipPath id={clipPathId} clipPathUnits="objectBoundingBox">
+              <polygon points="0.5,0 1,1 0,1" />
+            </clipPath>
+          </defs>
+        </svg>
+      </div>
     );
   } else if (element.type === 'image') {
     const imageStyle = {
       ...style,
       objectFit: 'cover',
       borderRadius: element.borderRadius,
+      pointerEvents: 'auto',
+      userSelect: 'none'
     };
     
     content = (
@@ -276,7 +319,19 @@ const CanvasElement = ({
         alt=""
         className={styles.imageElement || ''}
         style={imageStyle}
-        onMouseDown={(e) => !isLocked && handleMouseDown(e, element.id)}
+        onMouseDown={(e) => {
+          if (!isLocked) {
+            e.preventDefault();
+            e.stopPropagation();
+            handleMouseDown(e, element.id);
+          }
+        }}
+        onClick={(e) => {
+          if (!isLocked) {
+            e.stopPropagation();
+            handleSelectElement(e, element.id);
+          }
+        }}
         draggable={false}
       />
     );
