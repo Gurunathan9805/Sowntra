@@ -10,6 +10,37 @@
     font-feature-settings: "kern" 1, "liga" 1, "calt" 1;
 }
 
+/* Properties Panel Slide-out */
+.properties-slide-panel {
+  position: fixed;
+  left: 64px; /* Same as tools panel width */
+  top: 0;
+  bottom: 0;
+  width: 320px;
+  background: white;
+  border-right: 1px solid #e2e8f0;
+  box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+  z-index: 40;
+  overflow-y: auto;
+  transform: translateX(-100%);
+  transition: transform 0.3s ease;
+}
+
+.properties-slide-panel.open {
+  transform: translateX(0);
+}
+
+/* Shift canvas when properties panel is open */
+.canvas-shifted {
+  margin-left: 320px;
+  transition: margin-left 0.3s ease;
+}
+
+/* Main content adjustment */
+.main-content.with-properties {
+  margin-left: 320px;
+}
+
 /* Animation Keyframes */
 @keyframes rise {
     from {

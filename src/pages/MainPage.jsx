@@ -77,7 +77,9 @@ const Sowntra = () => {
   const [selectedElement, setSelectedElement] = useState(null);
   const [selectedElements, setSelectedElements] = useState(new Set());
   // isDragging, isResizing, isRotating, isPanning, dragStart, showAlignmentLines, alignmentLines now managed by useCanvasInteraction hook
+  
   const [canvasSize, setCanvasSize] = useState({ width: 800, height: 600 });
+  const [showPropertiesPanel, setShowPropertiesPanel] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentTool, setCurrentTool] = useState('select');
   const [zoomLevel, setZoomLevel] = useState(1);
@@ -786,24 +788,49 @@ const Sowntra = () => {
         {/* Main Content Area */}
         <div className="main-content">
           {/* Left Tools Panel - Hidden on mobile */}
-          <ToolsSidebar
-            t={t}
-            currentTool={currentTool}
-            setCurrentTool={setCurrentTool}
-            addElement={addElement}
-            fileInputRef={fileInputRef}
-            handleImageUpload={handleImageUpload}
-            loadProjectInputRef={loadProjectInputRef}
-            handleProjectFileLoad={handleProjectFileLoad}
-            undo={undo}
-            redo={redo}
-            historyIndex={historyIndex}
-            history={history}
-            showGrid={showGrid}
-            setShowGrid={setShowGrid}
-            snapToGrid={snapToGrid}
-            setSnapToGrid={setSnapToGrid}
-          />
+         <ToolsSidebar
+    t={t}
+    currentTool={currentTool}
+    setCurrentTool={setCurrentTool}
+    addElement={addElement}
+    fileInputRef={fileInputRef}
+    handleImageUpload={handleImageUpload}
+    loadProjectInputRef={loadProjectInputRef}
+    handleProjectFileLoad={handleProjectFileLoad}
+    undo={undo}
+    redo={redo}
+    historyIndex={historyIndex}
+    history={history}
+    showGrid={showGrid}
+    setShowGrid={setShowGrid}
+    snapToGrid={setSnapToGrid}
+    setSnapToGrid={setSnapToGrid}
+    // New props for properties panel
+    showPropertiesPanel={showPropertiesPanel}
+    setShowPropertiesPanel={setShowPropertiesPanel}
+    selectedElementData={selectedElementData}
+    selectedElement={selectedElement}
+    updateElement={updateElement}
+    duplicateElement={duplicateElement}
+    deleteElement={deleteElement}
+    toggleElementLock={toggleElementLock}
+    changeZIndex={changeZIndex}
+    lockedElements={lockedElements}
+    exportAsImage={exportAsImage}
+    exportAsPDF={exportAsPDF}
+    handleSaveClick={handleSaveClick}
+    loadProject={loadProject}
+    recording={recording}
+    startRecording={startRecording}
+    stopRecording={stopRecording}
+    recordingTimeElapsed={recordingTimeElapsed}
+    videoFormat={videoFormat}
+    setVideoFormat={setVideoFormat}
+    videoQuality={videoQuality}
+    setVideoQuality={setVideoQuality}
+    recordingDuration={recordingDuration}
+    setRecordingDuration={setRecordingDuration}
+  />
 
           {/* Canvas Area - FILLS SCREEN */}
           <CanvasWorkspace
@@ -830,9 +857,10 @@ const Sowntra = () => {
             drawingPath={drawingPath}
             showAlignmentLines={showAlignmentLines}
             alignmentLines={alignmentLines}
+            showPropertiesPanel={showPropertiesPanel}
           />
 
-          {/* Right Properties Panel - Hidden on mobile */}
+          {/* Right Properties Panel - Hidden on mobile
           <PropertiesPanel
             selectedElement={selectedElement}
             selectedElementData={selectedElementData}
@@ -865,7 +893,7 @@ const Sowntra = () => {
             setVideoQuality={setVideoQuality}
             recordingDuration={recordingDuration}
             setRecordingDuration={setRecordingDuration}
-          />
+          /> */}
         </div>
 
 

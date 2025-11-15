@@ -39,10 +39,13 @@ const CanvasWorkspace = ({
   
   // Alignment lines
   showAlignmentLines,
-  alignmentLines
+  alignmentLines,
+
+  // New prop for properties panel
+  showPropertiesPanel
 }) => {
   return (
-    <div className="flex-1 flex flex-col overflow-hidden">
+    <div className={`flex-1 flex flex-col overflow-hidden ${showPropertiesPanel ? 'canvas-shifted' : ''}`}>
       <div 
         className="canvas-container"
         ref={canvasContainerRef}
